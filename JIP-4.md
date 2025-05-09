@@ -7,7 +7,7 @@ A chain specification collects information that describes a JAM-based network. I
 The chain specification root object includes the following keys:
 
 - `id` - the machine-readable identifier for the network. This is used as part of the network protocol identifier.
-- `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where  - `<name>` is the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". `<ip>` is a string containing IPv4 address of the node.
+- `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where  - `<name>` is the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". `<ip>` is a string containing IPv4 or IPv6 address of the node.
 - `genesis_header` - A hex string containing JAM-serialized genesis  block header.
 - `genesis_state` - An object defning genesis state. Each key is a 62-characted hex string defining ghe 31-byte state key. The values are arbitrary length hex strings.
 
