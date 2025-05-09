@@ -1,1 +1,1 @@
-JAM Improvement Propoals
+JAM Improvement Proposals
