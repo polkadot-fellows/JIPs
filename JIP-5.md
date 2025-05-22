@@ -7,14 +7,15 @@ seed.
 
 Given a 32-byte seed `seed`, a set of secret keys is derived as follows:
 
-    ed25519_secret = blake2b(personal = "jam-valk-ed25519", seed)
-    bandersnatch_seed = blake2b(personal = "jam-valk-bsnatch", seed)
+    ed25519_secret = blake2b("jam_val_key_ed25519" ++ seed)
+    bandersnatch_seed = blake2b("jam_val_key_bandersnatch" ++ seed)
     bandersnatch_secret = decode_as_le(sha512(bandersnatch_seed)) % r
 
 Where:
 
-- The strings are ASCII-encoded with no terminator (both exactly 16 bytes long).
-- `blake2b` is the BLAKE2b hash function with 32-byte output and given personalisation.
+- The strings are ASCII-encoded with no terminator.
+- `++` indicates concatenation.
+- `blake2b` is the BLAKE2b hash function with 32-byte output.
 - `sha512` is the SHA-512 hash function.
 - `decode_as_le` is a function that decodes the input as a little-endian unsigned integer.
 - `r` is the order of the prime subgroup of the Bandersnatch elliptic curve.
@@ -34,43 +35,43 @@ Such seeds should be used for testing purposes only.
 ## Test vectors
 
     seed = trivial_seed(0) = 0000000000000000000000000000000000000000000000000000000000000000
-    ed25519_secret = d68962bd586d5f8bb216cf671161c8edeb23a094371d199a656024ae2feed20b
-    ed25519_public = 39648547f495eaac909f7840330e73cdf837f8db8a4f583728742c958adac82b
-    bandersnatch_seed = d5a7d25f2abbfb2122a71066423009f29eeeb76bec2afe3a0c639f094b1f8088
-    bandersnatch_public = 8e46bce7abcf8d3d87109f2b6b1a8c941bf100435ad6b75bf0e92110241bbcf0
+    ed25519_secret = 996542becdf1e78278dc795679c825faca2e9ed2bf101bf3c4a236d3ed79cf59
+    ed25519_public = 4418fb8c85bb3985394a8c2756d3643457ce614546202a2f50b093d762499ace
+    bandersnatch_seed = 007596986419e027e65499cc87027a236bf4a78b5e8bd7f675759d73e7a9c799
+    bandersnatch_public = ff71c6c03ff88adb5ed52c9681de1629a54e702fc14729f6b50d2f0a76f185b3
 
     seed = trivial_seed(1) = 0100000001000000010000000100000001000000010000000100000001000000
-    ed25519_secret = 74a600d03c44aaf79316575cc1c9bf2787c9560f35ebfee60ce75d0d153a3e85
-    ed25519_public = ebf47a0ff95ae6c7e8a6c0f97ff993d8b62fb9177d09fb088e5441cd9b2fe469
-    bandersnatch_seed = bdd114c73e1012739f898ec016759f2cbfe326640749e20e36694db7a63a0156
-    bandersnatch_public = d8bd18ead243182a535d3e1cffd7831dbab9d57f317bb90a0a43a208fd5927af
+    ed25519_secret = b81e308145d97464d2bc92d35d227a9e62241a16451af6da5053e309be4f91d7
+    ed25519_public = ad93247bd01307550ec7acd757ce6fb805fcf73db364063265b30a949e90d933
+    bandersnatch_seed = 12ca375c9242101c99ad5fafe8997411f112ae10e0e5b7c4589e107c433700ac
+    bandersnatch_public = dee6d555b82024f1ccf8a1e37e60fa60fd40b1958c4bb3006af78647950e1b91
 
     seed = trivial_seed(2) = 0200000002000000020000000200000002000000020000000200000002000000
-    ed25519_secret = 75a021a4f317243ce6b51630fb7d3fd6d94961b938b4aebd78f2b1d4ac70fbf5
-    ed25519_public = daf8a2a8d9e13d03ef1b173019385895d17f3cfb7f7160cddebd598909853383
-    bandersnatch_seed = fa3d89bdce2ee8c4080e0e6c4c713fce139e119de3a15c49362d8a4a3877c221
-    bandersnatch_public = f634fa63f79303d3303a5d3595c804b61878fd6ca4ac3516000e82c4ff5bf49b
+    ed25519_secret = 0093c8c10a88ebbc99b35b72897a26d259313ee9bad97436a437d2e43aaafa0f
+    ed25519_public = cab2b9ff25c2410fbe9b8a717abb298c716a03983c98ceb4def2087500b8e341
+    bandersnatch_seed = 3d71dc0ffd02d90524fda3e4a220e7ec514a258c59457d3077ce4d4f003fd98a
+    bandersnatch_public = 9326edb21e5541717fde24ec085000b28709847b8aab1ac51f84e94b37ca1b66
 
     seed = trivial_seed(3) = 0300000003000000030000000300000003000000030000000300000003000000
-    ed25519_secret = d8d5d42a75538d46fd4e6499a3e571793ce9850b4be3537d5078436d1ad3edd6
-    ed25519_public = d5e009718d549d240160927aaf6e81069380a3ec015d3c40775fc7c33fa09129
-    bandersnatch_seed = ef6ec45768a7dd22cb0e748aa68fed7c2ce76d1bd5a5d4be5515b0f334d75e4c
-    bandersnatch_public = 2618ddf8052545373359567d5dbdaef56513e19a6c0c5ecdb97bc2ac1877d107
+    ed25519_secret = 69b3a7031787e12bfbdcac1b7a737b3e5a9f9450c37e215f6d3b57730e21001a
+    ed25519_public = f30aa5444688b3cab47697b37d5cac5707bb3289e986b19b17db437206931a8d
+    bandersnatch_seed = 107a9148b39a1099eeaee13ac0e3c6b9c256258b51c967747af0f8749398a276
+    bandersnatch_public = 0746846d17469fb2f95ef365efcab9f4e22fa1feb53111c995376be8019981cc
 
     seed = trivial_seed(4) = 0400000004000000040000000400000004000000040000000400000004000000
-    ed25519_secret = b911d5dabc029bf5002948992a6470af766187ed488be36a00b0fd5ce56313f4
-    ed25519_public = f6bb95f9e6fc70c0d1aa4552e2594e31ecf5b88edffdb34ca9fa4539e5b34038
-    bandersnatch_seed = 463295a80c5e28672cfa43bc1a8acba33ec0a67d0420f8f256282e2799bb197a
-    bandersnatch_public = fd698db7d9e2a9edc8578019d40ce9d51c2b9183bf9324bab9a8d64c905befb1
+    ed25519_secret = b4de9ebf8db5428930baa5a98d26679ab2a03eae7c791d582e6b75b7f018d0d4
+    ed25519_public = 8b8c5d436f92ecf605421e873a99ec528761eb52a88a2f9a057b3b3003e6f32a
+    bandersnatch_seed = 0bb36f5ba8e3ba602781bb714e67182410440ce18aa800c4cb4dd22525b70409
+    bandersnatch_public = 151e5c8fe2b9d8a606966a79edd2f9e5db47e83947ce368ccba53bf6ba20a40b
 
     seed = trivial_seed(5) = 0500000005000000050000000500000005000000050000000500000005000000
-    ed25519_secret = 27f002a0a179ca0cc13f68326fe4077fbd8504f4319f26dbb7da3ab4d4e153ec
-    ed25519_public = 4155988e4a398eb6962bbeea98a7e79e28d42346fe7ebcf3b9476474343fc2f3
-    bandersnatch_seed = 1d19b265b0c018177b81a953ad455c88c4721f5ab3015a340a116c0216a08892
-    bandersnatch_public = d83c0731105d78c61323446c328d707a9ef7821e74e96ec494b2e67536946f4b
+    ed25519_secret = 4a6482f8f479e3ba2b845f8cef284f4b3208ba3241ed82caa1b5ce9fc6281730
+    ed25519_public = ab0084d01534b31c1dd87c81645fd762482a90027754041ca1b56133d0466c06
+    bandersnatch_seed = 75e73b8364bf4753c5802021c6aa6548cddb63fe668e3cacf7b48cdb6824bb09
+    bandersnatch_public = 2105650944fcd101621fd5bb3124c9fd191d114b7ad936c1d79d734f9f21392e
 
-    seed = 3115701e281bea0af863ccd901d3e4c4e42e04869a80d8e8504593b070859dcb
-    ed25519_secret = 0bb3c0dc9442b6e5d0c92e1572384d01ed34c261a6e157dd37ab01821c64a825
-    ed25519_public = e5b453caac1935025cd38a75e65d811b6df936d8654ff9df19bcaaebcc1366c0
-    bandersnatch_seed = 1f42a56c38b044f37a3e856aa08d8552e864b5b527a21a8e13e1d691f3dc70e7
-    bandersnatch_public = d4751fd4ab89f09ccc7fc4ba51fdb06daa2fdeac3e0eef29f7ce1f9d4af3ed01
+    seed = f92d680ea3f0ac06307795490d8a03c5c0d4572b5e0a8cffec87e1294855d9d1
+    ed25519_secret = f21e2d96a51387f9a7e5b90203654913dde7fa1044e3eba5631ed19f327d6126
+    ed25519_public = 11a695f674de95ff3daaff9a5b88c18448b10156bf88bc04200e48d5155c7243
+    bandersnatch_seed = 06154d857537a9b622a9a94b1aeee7d588db912bfc914a8a9707148bfba3b9d1
+    bandersnatch_public = 299bdfd8d615aadd9e6c58718f9893a5144d60e897bc9da1f3d73c935715c650
