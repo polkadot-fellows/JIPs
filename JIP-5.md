@@ -16,7 +16,7 @@ Where:
 - The strings are ASCII-encoded with no terminator (both exactly 16 bytes long).
 - `blake2b` is the BLAKE2b hash function with 32-byte output and given personalisation.
 - `sha512` is the SHA-512 hash function.
-- `decode_as_le` is a function that decodes the input as a little-endian integer.
+- `decode_as_le` is a function that decodes the input as a little-endian unsigned integer.
 - `r` is the order of the prime subgroup of the Bandersnatch elliptic curve.
 - `ed25519_secret` is a 32-byte Ed25519 secret key as defined in
   <https://ed25519.cr.yp.to/ed25519-20110926.pdf>.
@@ -25,7 +25,7 @@ Where:
 
 ## Trivial seeds
 
-We define the following function for deriving a 32-byte seed from 32-bit unsigned integer:
+We define the following function for deriving a 32-byte seed from a 32-bit unsigned integer:
 
     trivial_seed(i) = repeat_8_times(encode_as_32bit_le(i))
 
