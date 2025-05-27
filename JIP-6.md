@@ -15,7 +15,8 @@ byte-length-prefixed UTF-8 string:
     String (License)
     len++[String] (Authors)
 
-The metadata section may contain data beyond this; any such data should be ignored.
+Writers of metadata should not include any data beyond this, however any such data should be
+ignored by parsers.
 
 ## Further conventions
 
