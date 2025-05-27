@@ -28,5 +28,5 @@ programs should use the crate name as the program name.
 The license field should contain an SPDX license expression.
 
 Each member of the authors sequence should identify a person or organization. An email address may
-be included within angled brackets at the end of each author entry. For example, "Parity
-Technologies <admin@parity.io>".
+be included within angled brackets at the end of each author entry. For example, `Parity
+Technologies <admin@parity.io>`.
