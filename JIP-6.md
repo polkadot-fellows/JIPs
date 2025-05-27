@@ -5,15 +5,11 @@ proposes a standard format for this metadata.
 
 ## Format
 
-The metadata section should begin with the following, serialized as per the codec defined in the
-Gray Paper, with `len++[...]` meaning a length-prefixed sequence and `String` meaning a
-byte-length-prefixed UTF-8 string:
+Given three octet sequences which are UTF-8 encoded strings program-name $\mathbf{p} \in \mathbb{Y}$, version $\mathbf{v} \in \mathbb{Y}$ and licence $\mathbf{l} \in \mathbb{Y}$, together with a sequence of authors, each of them such strings $\mathbf{A} \in [\mathbb{Y}]$, we define the encoded metadata $\mathbf{m}$ as:
 
-    0 (Single byte)
-    String (Program name)
-    String (Version)
-    String (License)
-    len++[String] (Authors)
+$$
+\mathbf{m} \equiv [0] \frown \mathcal{E}(\left\updownarrow\mathbf{p}\right., \left\updownarrow\mathbf{v}\right., \left\updownarrow\mathbf{l}\right., \left\updownarrow[\left\updownarrow\mathbf{a}\right.\mid\mathbf{a} \in \mathbf{A}]\right.)
+$$
 
 Writers of metadata should not include any data beyond this, however any such data should be
 ignored by parsers.
