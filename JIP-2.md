@@ -20,6 +20,7 @@ Types:
 - `Blob`: an arbitrary length array each item numeric between 0 and 255 inclusive.
 - `ServiceId`: a single numeric item between 0 and $2^{32}-1$ inclusive.
 - `Parameters`: an object describing the parameters of the JAM chain. See below for more information.
+- `SyncState`: an object describing the sync state of the chain. See below for more information.
 
 Generally JSON RPC can be used over a variety of media and we don't make any assumptions of this, but it is envisaged that Websockets will be the usual medium, on port 19800.
 
@@ -180,6 +181,25 @@ Returns a list of all services currently known to be on JAM. This is a best-effo
   - `Hash`: The header hash indicating the block whose posterior state should be used for the query.
 - Result: array of `ServiceId`
 
+### `fetchSegments`
+Fetch a list of exported segments from the DA layer matching the given segment root hash.
+- Type: __Method__
+- Arguments: 
+  - `Hash`: Segment tree root hash.
+  - array of `u16`: Exported segment indicies.
+- Result: array of `Blob`
+
+### `syncState`
+Returns the sync state of the node.
+- Type: __Method__
+- Arguments: None
+- Result: `SyncState`
+
+### `subscribeSyncStatus`
+Subscribe to changes in sync status.
+- Type: __Subscription__
+- Notification type: `string` that is either `"InProgress"` or `"Completed"`
+
 ## Chain Parameters
 
 The `Parameters` object describes a JAM chain parameterization, which may not be equivalent to the canonical parameterization of the Gray Paper. All fields are numeric.
@@ -220,3 +240,7 @@ All parameters not described are assumed to be their canonical values. Some para
 - $\mathsf{C} = \frac{\mathsf{V}}{3}$: The number of validators per core is always 3.
 - $\mathsf{W}_G = 4,104$: The size of a (reconstructed) segment is fixed.
 - $\mathsf{W}_P = \frac{\mathsf{W}_G}{\mathsf{W}_E}$: The number of EC pieces in a segment.
+
+## SyncState
+- `num_peers`: Nuber of peers with an active UP 0 (Block announcement) stream.
+- `status`: A string that is either `"InProgress"` or `"Completed"`
