@@ -609,18 +609,25 @@ Emitted once a work-package has been refined locally. This should be emitted by 
 secondary guarantors.
 
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
-    Work-Report Hash
-    Work-Report Summary
     len++[Refine Cost] (Cost of refine call for each work item)
 
-### 102: Work-report signature sent
+### 102: Work-report built
+
+Emitted once a work-report has been built for a work-package. This should be emitted by both
+primary and secondary guarantors.
+
+    Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
+    Work-Report Hash
+    Work-Report Summary
+
+### 103: Work-report signature sent
 
 Emitted once a work-report signature for a shared work-package has been sent to the primary
 guarantor (CE 134).
 
     Event ID (ID of the corresponding "work-package being shared" event)
 
-### 103: Work-report signature received
+### 104: Work-report signature received
 
 Emitted by the primary guarantor once a valid work-report signature has been received from a
 secondary guarantor (CE 134). If an invalid work-report signature is received, a "work-package
@@ -629,14 +636,14 @@ share failed" event should be emitted instead.
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Secondary guarantor)
 
-### 104: Distributing guarantee
+### 105: Distributing guarantee
 
 Emitted when a guarantor begins distributing a work-report guarantee to other validators, for
 potential inclusion in a block.
 
     Guarantee Summary
 
-### 105: Sending guarantee
+### 106: Sending guarantee
 
 Emitted when a guarantor begins sending a work-report guarantee to another validator, for potential
 inclusion in a block (CE 135).
@@ -644,40 +651,40 @@ inclusion in a block (CE 135).
     Event ID (ID of the corresponding "distributing guarantee" event)
     Peer ID (Recipient)
 
-### 106: Guarantee send failed
+### 107: Guarantee send failed
 
 Emitted if sending a work-report guarantee fails (CE 135).
 
     Event ID (ID of the corresponding "sending guarantee" event)
     Reason
 
-### 107: Guarantee sent
+### 108: Guarantee sent
 
 Emitted if sending a work-report guarantee succeeds (CE 135).
 
     Event ID (ID of the corresponding "sending guarantee" event)
 
-### 108: Receiving guarantee
+### 109: Receiving guarantee
 
 Emitted by the recipient when a guarantor begins sending a work-report guarantee (CE 135).
 
     Peer ID (Sender)
 
-### 109: Guarantee receive failed
+### 110: Guarantee receive failed
 
 Emitted if receiving a work-report guarantee fails (CE 135).
 
     Event ID (ID of the corresponding "receiving guarantee" event)
     Reason
 
-### 110: Guarantee received
+### 111: Guarantee received
 
 Emitted if receiving a work-report guarantee succeeds, and the guarantee is deemed valid (CE 135).
 
     Event ID (ID of the corresponding "receiving guarantee" event)
     Guarantee Summary
 
-### 111: Invalid guarantee received
+### 112: Invalid guarantee received
 
 Emitted when an _invalid_ work-report guarantee is received from a peer (CE 135). Note that a
 "guarantee receive failed" event should _not_ be emitted in this case.
@@ -686,7 +693,7 @@ Emitted when an _invalid_ work-report guarantee is received from a peer (CE 135)
     Guarantee Summary
     Reason (Why is the guarantee considered invalid?)
 
-### 112: Guarantee discarded
+### 113: Guarantee discarded
 
 Emitted when a guarantee is discarded from the local guarantee pool.
 
