@@ -153,6 +153,7 @@ The following "common" types are defined:
 The first message sent on each connection to the telemetry server should contain information about
 the connecting node:
 
+    0 (Single byte, telemetry protocol version)
     Peer ID
     Peer Address
     u32 (Node flags)
