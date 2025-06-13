@@ -445,11 +445,32 @@ Emitted when a block has been fully sent to or received from a peer (CE 128).
     Block Summary
     bool (Last block for the request?)
 
-## Ticket distribution events
+## Safrole ticket events
 
-These events concern distribution of tickets for the Safrole lottery.
+These events concern generation and distribution of tickets for the Safrole lottery.
 
-### 80: Ticket transfer failed
+### 80: Generating ticket
+
+Emitted when generation of a new Safrole ticket begins.
+
+    Epoch Index (The epoch the ticket is to be used in)
+    0 OR 1 (Single byte, ticket attempt number)
+
+### 81: Ticket generate failed
+
+Emitted if Safrole ticket generation fails.
+
+    Event ID (ID of the corresponding "generating ticket" event)
+    Reason
+
+### 82: Generated ticket
+
+Emitted once a Safrole ticket has been generated.
+
+    Event ID (ID of the corresponding "generating ticket" event)
+    [u8; 32] (VRF output)
+
+### 83: Ticket transfer failed
 
 Emitted when a Safrole ticket send or receive fails (CE 131/132).
 
@@ -458,7 +479,7 @@ Emitted when a Safrole ticket send or receive fails (CE 131/132).
     bool (Was CE 132 used?)
     Reason
 
-### 81: Ticket transferred
+### 84: Ticket transferred
 
 Emitted when a valid Safrole ticket is sent to or received from a peer (CE 131/132).
 
@@ -469,7 +490,7 @@ Emitted when a valid Safrole ticket is sent to or received from a peer (CE 131/1
     0 OR 1 (Single byte, ticket attempt number)
     [u8; 32] (VRF output)
 
-### 82: Invalid ticket received
+### 85: Invalid ticket received
 
 Emitted when an _invalid_ Safrole ticket is received from a peer (CE 131/132).
 
