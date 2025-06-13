@@ -102,13 +102,18 @@ The following "common" types are defined:
         Exec Cost (lookup calls) ++
         Exec Cost (Other host calls)
 
+    Root Identifier = Segments-Root OR Work-Package Hash
+    Import Spec =
+        Root Identifier ++
+        u16 (Export index, plus 2^15 if Root Identifier is a Work-Package Hash)
+    Import Segment ID = u16 (Import list index, or for a proof page, 2^15 plus index of a proven page in import list)
     Work-Item Summary =
         Service ID ++
         u32 (Payload size) ++
         Gas (Refine gas limit) ++
         Gas (Accumulate gas limit) ++
         u32 (Sum of extrinsic lengths) ++
-        u16 (Number of imported segments) ++
+        len++[Import Spec] ++
         u16 (Number of exported segments)
     Work-Package Summary =
         u32 (Work-package size in bytes) ++
@@ -775,7 +780,7 @@ Emitted by guarantors when they send a segment shard request to an assurer (CE 1
     Peer ID (Assurer)
     bool (Was CE 140 used?)
     Work-Package Hash (The work-package importing the segments)
-    u16 (Number of segment shards requested)
+    len++[Import Segment ID ++ Shard Index] (Requested segment shards)
 
 ### 129: Segment shard request received
 
