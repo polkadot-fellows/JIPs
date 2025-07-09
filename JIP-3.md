@@ -123,8 +123,6 @@ The following "common" types are defined:
         len++[Work-Item Summary]
 
     Work-Report Summary =
-        Core Index ++
-        Work-Package Hash ++
         u32 (Bundle size in bytes) ++
         Erasure-Root ++
         Segments-Root
