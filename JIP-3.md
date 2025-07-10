@@ -88,18 +88,13 @@ The following "common" types are defined:
         Exec Cost (Other host calls)
     Accumulate Cost =
         u32 (Number of accumulate calls) ++
+        u32 (Number of transfers processed) ++
         u32 (Number of items accumulated) ++
         Exec Cost (Total) ++
         Exec Cost (read/write calls) ++
         Exec Cost (lookup/query/solicit/forget/provide calls) ++
         Exec Cost (info/new/upgrade/transfer/eject calls) ++
-        Gas (Total gas charged for on-transfer execution) ++
-        Exec Cost (Other host calls)
-    On-Transfer Cost =
-        u32 (Number of on-transfer calls) ++
-        Exec Cost (Total) ++
-        Exec Cost (read/write calls) ++
-        Exec Cost (lookup calls) ++
+        Gas (Total gas charged for transfer processing by destination services) ++
         Exec Cost (Other host calls)
 
     Root Identifier = Segments-Root OR Work-Package Hash
@@ -387,10 +382,8 @@ and importers.
 
     Event ID (ID of the corresponding "authoring" or "importing" event)
     len++[Service ID ++ Accumulate Cost] (Accumulated services and the cost of their accumulate calls)
-    len++[Service ID ++ On-Transfer Cost] (Services which received transfers and the cost of their on-transfer calls)
 
-Each service should be listed at most once in the accumulated services list, and at most once in
-the list of services which received transfers.
+Each service should be listed at most once in the accumulated services list.
 
 ## Block distribution events
 
