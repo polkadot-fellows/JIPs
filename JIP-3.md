@@ -272,7 +272,7 @@ possible. In particular it should be emitted _before_ the connection handshake c
 
     Peer Address
 
-### 22: Connect in failed
+### 22: Connection in failed
 
 Emitted when an incoming connection attempt fails.
 
@@ -293,7 +293,7 @@ Emitted when an outgoing connection attempt is initiated.
     Peer ID
     Peer Address
 
-### 25: Connect out failed
+### 25: Connection out failed
 
 Emitted when an outgoing connection attempt fails.
 
@@ -327,7 +327,7 @@ Emitted when authoring of a new block begins.
     Slot
     Header Hash (Of the parent block)
 
-### 41: Author failed
+### 41: Authoring failed
 
 Emitted if block authoring fails for some reason.
 
@@ -353,11 +353,11 @@ author should emit the "authoring" event instead.
     Header Hash
     Block Summary
 
-### 44: Block verify failed
+### 44: Block verification failed
 
 Emitted if verification of a block being imported fails for some reason. This includes if the block
 is determined to be invalid, ie it does not satisfy all the validity conditions listed in the GP.
-This should not be emitted by the block author (the author should emit the "author failed" event
+This should not be emitted by the block author (the author should emit the "authoring failed" event
 instead).
 
     Event ID (ID of the corresponding "importing" event)
@@ -372,7 +372,7 @@ emitted by the block author (the author should emit the "authored" event instead
 
     Event ID (ID of the corresponding "importing" event)
 
-### 46: Block execute failed
+### 46: Block execution failed
 
 Emitted if execution of a block fails after authoring/verification. This can happen if, for
 example, there is a collision amongst created service IDs during accumulation.
@@ -459,7 +459,7 @@ Emitted when generation of a new Safrole ticket begins.
     Epoch Index (The epoch the ticket is to be used in)
     0 OR 1 (Single byte, ticket attempt number)
 
-### 81: Ticket generate failed
+### 81: Ticket generation failed
 
 Emitted if Safrole ticket generation fails.
 
@@ -587,7 +587,7 @@ Emitted by the primary guarantor when a work-package sharing stream is opened (C
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Secondary guarantor)
 
-### 99: Work-package share failed
+### 99: Work-package sharing failed
 
 Emitted if sharing a work-package with another guarantor fails (CE 134). Possible failures include
 failure to send the bundle, failure to receive a work-report signature, or receipt of an invalid
@@ -634,7 +634,7 @@ guarantor (CE 134).
 
 Emitted by the primary guarantor once a valid work-report signature has been received from a
 secondary guarantor (CE 134). If an invalid work-report signature is received, a "work-package
-share failed" event should be emitted instead.
+sharing failed" event should be emitted instead.
 
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Secondary guarantor)
@@ -771,7 +771,7 @@ Emitted when reconstruction of a bundle from shards received from assurers begin
     Event ID (TODO, should reference auditing event)
     bool (Is this a trivial reconstruction, using only original-data shards?)
 
-### 128: Bundle reconstruct failed
+### 128: Bundle reconstruction failed
 
 Emitted if reconstruction of a bundle from shards fails.
 
@@ -824,7 +824,7 @@ Emitted when reconstruction of a set of segments from shards received from assur
     len++[Import Segment ID] (Segments being reconstructed)
     bool (Is this a trivial reconstruction, using only original-data shards?)
 
-### 135: Segment reconstruct failed
+### 135: Segment reconstruction failed
 
 Emitted if reconstruction of a set of segments fails.
 
@@ -837,7 +837,7 @@ Emitted once a set of segments has been successfully reconstructed from shards.
 
     Event ID (ID of the corresponding "reconstructing segments" event)
 
-### 137: Segment verify failed
+### 137: Segment verification failed
 
 Emitted if, following reconstruction of a segment and its proof page, extraction or verification of
 the segment proof fails. This should only be possible in two cases:
@@ -912,7 +912,7 @@ Emitted when an _invalid_ assurance is received from a peer (CE 141).
 
 These events concern distribution of preimages for inclusion in blocks.
 
-### 150: Preimage announce failed
+### 150: Preimage announcement failed
 
 Emitted when a preimage announcement fails (CE 142).
 
