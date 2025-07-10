@@ -268,7 +268,7 @@ possible. In particular it should be emitted _before_ the connection handshake c
 
     Peer Address
 
-### 22: Connection in failed
+### 22: Connect in failed
 
 Emitted when an incoming connection attempt fails.
 
@@ -289,7 +289,7 @@ Emitted when an outgoing connection attempt is initiated.
     Peer ID
     Peer Address
 
-### 25: Connection out failed
+### 25: Connect out failed
 
 Emitted when an outgoing connection attempt fails.
 
