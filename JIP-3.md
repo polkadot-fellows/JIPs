@@ -101,7 +101,8 @@ The following "common" types are defined:
     Import Spec =
         Root Identifier ++
         u16 (Export index, plus 2^15 if Root Identifier is a Work-Package Hash)
-    Import Segment ID = u16 (Import list index, or for a proof page, 2^15 plus index of a proven page in import list)
+    Import Segment ID = u16 (Index in overall list of work-package imports, or for a proof page,
+        2^15 plus index of a proven page)
     Work-Item Summary =
         Service ID ++
         u32 (Payload size) ++
