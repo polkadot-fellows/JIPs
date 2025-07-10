@@ -389,14 +389,23 @@ Each service should be listed at most once in the accumulated services list.
 
 These events concern announcement and transfer of blocks between peers.
 
-### 60: Block announcement stream opened
+### 60: Block announcement stream open failed
+
+Emitted when an attempt to open a block announcement stream (UP 0) fails. This should only be
+emitted by the side that attempted to open the stream. This need not be emitted if the failure was
+due to disconnection.
+
+    Peer ID
+    Reason
+
+### 61: Block announcement stream opened
 
 Emitted when a block announcement stream (UP 0) is opened.
 
     Peer ID
     Connection Side (The side that opened the stream)
 
-### 61: Block announcement stream closed
+### 62: Block announcement stream closed
 
 Emitted when a block announcement stream (UP 0) is closed. This need not be emitted if the stream
 is closed due to disconnection.
@@ -405,7 +414,7 @@ is closed due to disconnection.
     Connection Side (The side that closed the stream)
     Reason
 
-### 62: Block announced
+### 63: Block announced
 
 Emitted when a block announcement is sent to or received from a peer (UP 0).
 
@@ -414,7 +423,16 @@ Emitted when a block announcement is sent to or received from a peer (UP 0).
     Slot
     Header Hash
 
-### 63: Blocks requested
+### 64: Block request failed immediately
+
+Emitted if a block request (CE 128) fails before the details of the request are sent/received. This
+could happen for example if the node receiving the request is overloaded.
+
+    Peer ID
+    Connection Side (Requester)
+    Reason
+
+### 65: Blocks requested
 
 Emitted when a sequence of blocks is requested from or by a peer (CE 128).
 
@@ -424,14 +442,14 @@ Emitted when a sequence of blocks is requested from or by a peer (CE 128).
     0 (Ascending exclusive) OR 1 (Descending inclusive) (Direction, single byte)
     u32 (Maximum number of blocks)
 
-### 64: Block request failed
+### 66: Block request failed
 
 Emitted if a block request received from or sent to a peer fails (CE 128).
 
     Event ID (ID of the corresponding "blocks requested" event)
     Reason
 
-### 65: Block transferred
+### 67: Block transferred
 
 Emitted when a block has been fully sent to or received from a peer (CE 128).
 
@@ -701,7 +719,16 @@ Emitted when a guarantee is discarded from the local guarantee pool.
 These events concern availability shard distribution and retrieval, and reconstruction of
 bundles/segments.
 
-### 120: Shards requested
+### 120: Shard request failed immediately
+
+Emitted if a shard request (CE 137) fails before the details of the request are sent/received. This
+could happen for example if the node receiving the request is overloaded.
+
+    Peer ID
+    Connection Side (Requester)
+    Reason
+
+### 121: Shards requested
 
 Emitted when an assurer requests their shards from a guarantor (CE 137). This event should be
 emitted by both the assurer and the guarantor.
@@ -711,7 +738,7 @@ emitted by both the assurer and the guarantor.
     Erasure-Root
     Shard Index
 
-### 121: Shard request failed
+### 122: Shard request failed
 
 Emitted when a shard request fails (CE 137). This should be emitted by both sides, ie the assurer
 and the guarantor.
@@ -719,22 +746,31 @@ and the guarantor.
     Event ID (ID of the corresponding "shards requested" event)
     Reason
 
-### 122: Shards transferred
+### 123: Shards transferred
 
 Emitted when a shard request completes successfully (CE 137). This should be emitted by both sides,
 ie the assurer and the guarantor.
 
     Event ID (ID of the corresponding "shards requested" event)
 
-### 123: Bundle shard request sent
+### 124: Bundle shard request failed immediately
 
-Emitted by auditors when they send a bundle shard request to an assurer (CE 138).
+Emitted if a bundle shard request (CE 138) fails before the details of the request are
+sent/received. This could happen for example if the node receiving the request is overloaded.
+
+    Peer ID
+    Connection Side (Requester)
+    Reason
+
+### 125: Bundle shard request sent
+
+Emitted by auditors after they have sent a bundle shard request to an assurer (CE 138).
 
     Event ID (TODO, should reference auditing event)
     Peer ID (Assurer)
     Shard Index
 
-### 124: Bundle shard request received
+### 126: Bundle shard request received
 
 Emitted by assurers when they receive a bundle shard request from an auditor (CE 138).
 
@@ -742,7 +778,7 @@ Emitted by assurers when they receive a bundle shard request from an auditor (CE
     Erasure-Root
     Shard Index
 
-### 125: Bundle shard request failed
+### 127: Bundle shard request failed
 
 Emitted when a bundle shard request fails (CE 138). This should be emitted by both sides, ie the
 auditor and the assurer.
@@ -750,43 +786,52 @@ auditor and the assurer.
     Event ID (ID of the corresponding "bundle shard request sent" or "bundle shard request received" event)
     Reason
 
-### 126: Bundle shard transferred
+### 128: Bundle shard transferred
 
 Emitted when a bundle shard request completes successfully (CE 138). This should be emitted by both
 sides, ie the auditor and the assurer.
 
     Event ID (ID of the corresponding "bundle shard request sent" or "bundle shard request received" event)
 
-### 127: Reconstructing bundle
+### 129: Reconstructing bundle
 
 Emitted when reconstruction of a bundle from shards received from assurers begins.
 
     Event ID (TODO, should reference auditing event)
     bool (Is this a trivial reconstruction, using only original-data shards?)
 
-### 128: Bundle reconstruction failed
+### 130: Bundle reconstruction failed
 
 Emitted if reconstruction of a bundle from shards fails.
 
     Event ID (ID of the corresponding "reconstructing bundle" event)
     Reason
 
-### 129: Bundle reconstructed
+### 131: Bundle reconstructed
 
 Emitted once a bundle has been successfully reconstructed from shards.
 
     Event ID (ID of the corresponding "reconstructing bundle" event)
 
-### 130: Segment shard request sent
+### 132: Segment shard request failed immediately
 
-Emitted by guarantors when they send a segment shard request to an assurer (CE 139/140).
+Emitted if a segment shard request (CE 139/140) fails before the details of the request are
+sent/received. This could happen for example if the node receiving the request is overloaded.
+
+    Peer ID
+    Connection Side (Requester)
+    Reason
+
+### 133: Segment shard request sent
+
+Emitted by guarantors after they have sent a segment shard request to an assurer (CE 139/140).
 
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Assurer)
     bool (Was CE 140 used?)
     len++[Import Segment ID ++ Shard Index] (Requested segment shards)
 
-### 131: Segment shard request received
+### 134: Segment shard request received
 
 Emitted by assurers when they receive a segment shard request from a guarantor (CE 139/140).
 
@@ -794,7 +839,7 @@ Emitted by assurers when they receive a segment shard request from a guarantor (
     bool (Was CE 140 used?)
     u16 (Number of segment shards requested)
 
-### 132: Segment shard request failed
+### 135: Segment shard request failed
 
 Emitted when a segment shard request fails (CE 139/140). This should be emitted by both sides, ie
 the guarantor and the assurer.
@@ -802,14 +847,14 @@ the guarantor and the assurer.
     Event ID (ID of the corresponding "segment shard request sent" or "segment shard request received" event)
     Reason
 
-### 133: Segment shards transferred
+### 136: Segment shards transferred
 
 Emitted when a segment shard request completes successfully (CE 139/140). This should be emitted by
 both sides, ie the guarantor and the assurer.
 
     Event ID (ID of the corresponding "segment shard request sent" or "segment shard request received" event)
 
-### 134: Reconstructing segments
+### 137: Reconstructing segments
 
 Emitted when reconstruction of a set of segments from shards received from assurers begins.
 
@@ -817,20 +862,20 @@ Emitted when reconstruction of a set of segments from shards received from assur
     len++[Import Segment ID] (Segments being reconstructed)
     bool (Is this a trivial reconstruction, using only original-data shards?)
 
-### 135: Segment reconstruction failed
+### 138: Segment reconstruction failed
 
 Emitted if reconstruction of a set of segments fails.
 
     Event ID (ID of the corresponding "reconstructing segments" event)
     Reason
 
-### 136: Segments reconstructed
+### 139: Segments reconstructed
 
 Emitted once a set of segments has been successfully reconstructed from shards.
 
     Event ID (ID of the corresponding "reconstructing segments" event)
 
-### 137: Segment verification failed
+### 140: Segment verification failed
 
 Emitted if, following reconstruction of a segment and its proof page, extraction or verification of
 the segment proof fails. This should only be possible in two cases:
@@ -846,7 +891,7 @@ For efficiency, multiple segments may be reported in a single event.
     len++[u16] (Indices of the failed segments in the import list)
     Reason
 
-### 138: Segments verified
+### 141: Segments verified
 
 Emitted once a reconstructed segment has been successfully verified against the corresponding
 segments-root. For efficiency, multiple segments may be reported in a single event.
@@ -854,7 +899,7 @@ segments-root. For efficiency, multiple segments may be reported in a single eve
     Event ID (ID of the corresponding "work-package submission" event)
     len++[u16] (Indices of the verified segments in the import list)
 
-### 139: Distributing assurance
+### 142: Distributing assurance
 
 Emitted when an assurer begins distributing an assurance to other validators, for potential
 inclusion in a block.
@@ -862,7 +907,7 @@ inclusion in a block.
     Header Hash (Assurance anchor)
     [u8; ceil(C / 8)] (Availability bitfield; one bit per core, C is the total number of cores)
 
-### 140: Assurance send failed
+### 143: Assurance send failed
 
 Emitted when an assurer fails to send an assurance to another validator (CE 141).
 
@@ -870,28 +915,28 @@ Emitted when an assurer fails to send an assurance to another validator (CE 141)
     Peer ID (Recipient)
     Reason
 
-### 141: Assurance sent
+### 144: Assurance sent
 
 Emitted by assurers after sending an assurance to another validator (CE 141).
 
     Event ID (ID of the corresponding "distributing assurance" event)
     Peer ID (Recipient)
 
-### 142: Assurance receive failed
+### 145: Assurance receive failed
 
 Emitted when a validator fails to receive an assurance from a peer (CE 141).
 
     Peer ID (Sender)
     Reason
 
-### 143: Assurance received
+### 146: Assurance received
 
 Emitted when a valid assurance is received from a peer (CE 141).
 
     Peer ID (Sender)
     Header Hash (Assurance anchor)
 
-### 144: Invalid assurance received
+### 147: Invalid assurance received
 
 Emitted when an _invalid_ assurance is received from a peer (CE 141).
 
@@ -905,7 +950,7 @@ Emitted when an _invalid_ assurance is received from a peer (CE 141).
 
 These events concern distribution of preimages for inclusion in blocks.
 
-### 150: Preimage announcement failed
+### 160: Preimage announcement failed
 
 Emitted when a preimage announcement fails (CE 142).
 
@@ -913,7 +958,7 @@ Emitted when a preimage announcement fails (CE 142).
     Connection Side (Announcer)
     Reason
 
-### 151: Preimage announced
+### 161: Preimage announced
 
 Emitted when a preimage announcement is sent to or received from a peer (CE 142).
 
@@ -923,7 +968,7 @@ Emitted when a preimage announcement is sent to or received from a peer (CE 142)
     Hash
     u32 (Preimage length)
 
-### 152: Announced preimage forgotten
+### 162: Announced preimage forgotten
 
 Emitted when a preimage announced by a peer is forgotten about. This event should not be emitted
 for preimages the node managed to acquire (if such a preimage is discarded, a "preimage discarded"
@@ -934,7 +979,16 @@ event should be emitted instead).
     u32 (Preimage length)
     Announced Preimage Forget Reason
 
-### 153: Preimage requested
+### 163: Preimage request failed immediately
+
+Emitted if a preimage request (CE 143) fails before the details of the request are sent/received.
+This could happen for example if the node receiving the request is overloaded.
+
+    Peer ID
+    Connection Side (Requester)
+    Reason
+
+### 164: Preimage requested
 
 Emitted when a preimage is requested from or by a peer (CE 143).
 
@@ -942,21 +996,21 @@ Emitted when a preimage is requested from or by a peer (CE 143).
     Connection Side (Requester)
     Hash
 
-### 154: Preimage request failed
+### 165: Preimage request failed
 
 Emitted if a preimage request received from or sent to a peer fails (CE 143).
 
     Event ID (ID of the corresponding "preimage requested" event)
     Reason
 
-### 155: Preimage transferred
+### 166: Preimage transferred
 
 Emitted when a preimage has been fully sent to or received from a peer (CE 143).
 
     Event ID (ID of the corresponding "preimage requested" event)
     u32 (Preimage length)
 
-### 156: Preimage discarded
+### 167: Preimage discarded
 
 Emitted when a preimage is discarded from the local preimage pool.
 
