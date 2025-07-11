@@ -307,7 +307,6 @@ Emitted when an outgoing connection attempt succeeds.
 Emitted when a connection to a peer is broken.
 
     Peer ID
-    Peer Address
     Option<Connection Side> (Terminator of the connection, may be omitted in case of eg a timeout)
     Reason
 
