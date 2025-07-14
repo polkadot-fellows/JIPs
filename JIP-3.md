@@ -92,8 +92,10 @@ The following "common" types are defined:
         u32 (Number of items accumulated) ++
         Exec Cost (Total) ++
         Exec Cost (read/write calls) ++
-        Exec Cost (lookup/query/solicit/forget/provide calls) ++
-        Exec Cost (info/new/upgrade/transfer/eject calls) ++
+        Exec Cost (lookup calls) ++
+        Exec Cost (query/solicit/forget/provide calls) ++
+        Exec Cost (info/new/upgrade/eject calls) ++
+        Exec Cost (transfer calls) ++
         Gas (Total gas charged for transfer processing by destination services) ++
         Exec Cost (Other host calls)
 
