@@ -391,23 +391,14 @@ Each service should be listed at most once in the accumulated services list.
 
 These events concern announcement and transfer of blocks between peers.
 
-### 60: Block announcement stream open failed
-
-Emitted when an attempt to open a block announcement stream (UP 0) fails. This should only be
-emitted by the side that attempted to open the stream. This need not be emitted if the failure was
-due to disconnection.
-
-    Peer ID
-    Reason
-
-### 61: Block announcement stream opened
+### 60: Block announcement stream opened
 
 Emitted when a block announcement stream (UP 0) is opened.
 
     Peer ID
     Connection Side (The side that opened the stream)
 
-### 62: Block announcement stream closed
+### 61: Block announcement stream closed
 
 Emitted when a block announcement stream (UP 0) is closed. This need not be emitted if the stream
 is closed due to disconnection.
@@ -416,7 +407,7 @@ is closed due to disconnection.
     Connection Side (The side that closed the stream)
     Reason
 
-### 63: Block announced
+### 62: Block announced
 
 Emitted when a block announcement is sent to or received from a peer (UP 0).
 
@@ -425,7 +416,7 @@ Emitted when a block announcement is sent to or received from a peer (UP 0).
     Slot
     Header Hash
 
-### 64: Block request failed immediately
+### 63: Block request failed immediately
 
 Emitted if a block request (CE 128) fails before the details of the request are sent/received. This
 could happen for example if the node receiving the request is overloaded.
@@ -434,7 +425,7 @@ could happen for example if the node receiving the request is overloaded.
     Connection Side (Requester)
     Reason
 
-### 65: Blocks requested
+### 64: Blocks requested
 
 Emitted when a sequence of blocks is requested from or by a peer (CE 128).
 
@@ -444,14 +435,14 @@ Emitted when a sequence of blocks is requested from or by a peer (CE 128).
     0 (Ascending exclusive) OR 1 (Descending inclusive) (Direction, single byte)
     u32 (Maximum number of blocks)
 
-### 66: Block request failed
+### 65: Block request failed
 
 Emitted if a block request received from or sent to a peer fails (CE 128).
 
     Event ID (ID of the corresponding "blocks requested" event)
     Reason
 
-### 67: Block transferred
+### 66: Block transferred
 
 Emitted when a block has been fully sent to or received from a peer (CE 128).
 
