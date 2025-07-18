@@ -312,6 +312,16 @@ Emitted when a connection to a peer is broken.
     Option<Connection Side> (Terminator of the connection, may be omitted in case of eg a timeout)
     Reason
 
+### 28: Peer misbehaved
+
+Emitted when a peer misbehaves. Misbehaviour is any behaviour which is objectively not compliant
+with the network protocol or the GP. This includes for example sending a malformed message or an
+invalid signature. This does _not_ include, for example, timing out (timeouts are subjective) or
+prematurely closing a stream (this is permitted by the network protocol).
+
+    Peer ID
+    Reason
+
 ## Block authoring/importing events
 
 These events concern the block authoring and importing pipelines. Note that some events are common
@@ -354,8 +364,10 @@ author should emit the "authoring" event instead.
 
 Emitted if verification of a block being imported fails for some reason. This includes if the block
 is determined to be invalid, ie it does not satisfy all the validity conditions listed in the GP.
-This should not be emitted by the block author (the author should emit the "authoring failed" event
-instead).
+In this case, a "peer misbehaved" event should also be emitted for the peer which sent the block.
+
+This event should never be emitted by the block author (authors should emit the "authoring failed"
+event instead).
 
     Event ID (ID of the corresponding "importing" event)
     Reason
@@ -446,6 +458,10 @@ Emitted if a block request received from or sent to a peer fails (CE 128).
 
 Emitted when a block has been fully sent to or received from a peer (CE 128).
 
+In the case of a received block, this event may be emitted before any checks are performed. If the
+block is found to be invalid or to not match the request, a "peer misbehaved" event should be
+emitted; emitting a "block request failed" event is optional.
+
     Event ID (ID of the corresponding "blocks requested" event)
     Slot
     Header Hash
@@ -487,7 +503,10 @@ Emitted when a Safrole ticket send or receive fails (CE 131/132).
 
 ### 84: Ticket transferred
 
-Emitted when a valid Safrole ticket is sent to or received from a peer (CE 131/132).
+Emitted when a Safrole ticket is sent to or received from a peer (CE 131/132).
+
+In the case of a received ticket, this should be emitted before the ticket is checked. If the
+ticket is found to be invalid, a "peer misbehaved" event should be emitted.
 
     Peer ID
     Connection Side (Sender)
@@ -495,17 +514,6 @@ Emitted when a valid Safrole ticket is sent to or received from a peer (CE 131/1
     Epoch Index (The epoch the ticket is to be used in)
     0 OR 1 (Single byte, ticket attempt number)
     [u8; 32] (VRF output)
-
-### 85: Invalid ticket received
-
-Emitted when an _invalid_ Safrole ticket is received from a peer (CE 131/132).
-
-    Peer ID (Sender)
-    bool (Was CE 132 used?)
-    Epoch Index (The epoch the ticket was to be used in)
-    0 OR 1 (Single byte, ticket attempt number)
-    [u8; 784] (Bandersnatch ring VRF proof)
-    Reason (Why is the ticket considered invalid?)
 
 ## Guaranteeing events
 
@@ -594,7 +602,8 @@ Emitted by the primary guarantor when a work-package sharing stream is opened (C
 
 Emitted if sharing a work-package with another guarantor fails (CE 134). Possible failures include
 failure to send the bundle, failure to receive a work-report signature, or receipt of an invalid
-work-report signature. This event should only be emitted by the primary guarantor; the secondary
+work-report signature (in this case, a "peer misbehaved" event should also be emitted for the
+secondary guarantor). This event should only be emitted by the primary guarantor; the secondary
 guarantor should emit the "work-package failed" event on failure.
 
     Event ID (ID of the corresponding "work-package submission" event)
@@ -637,7 +646,7 @@ guarantor (CE 134).
 
 Emitted by the primary guarantor once a valid work-report signature has been received from a
 secondary guarantor (CE 134). If an invalid work-report signature is received, a "work-package
-sharing failed" event should be emitted instead.
+sharing failed" event should be emitted instead, as well as a "peer misbehaved" event.
 
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Secondary guarantor)
@@ -685,21 +694,14 @@ Emitted if receiving a work-report guarantee fails (CE 135).
 
 ### 111: Guarantee received
 
-Emitted if receiving a work-report guarantee succeeds, and the guarantee is deemed valid (CE 135).
+Emitted if receiving a work-report guarantee succeeds (CE 135). This should be emitted before the
+guarantee is checked. If the guarantee is found to be invalid, a "peer misbehaved" event should be
+emitted.
 
     Event ID (ID of the corresponding "receiving guarantee" event)
     Guarantee Summary
 
-### 112: Invalid guarantee received
-
-Emitted when an _invalid_ work-report guarantee is received from a peer (CE 135). Note that a
-"guarantee receive failed" event should _not_ be emitted in this case.
-
-    Event ID (ID of the corresponding "receiving guarantee" event)
-    Guarantee Summary
-    Reason (Why is the guarantee considered invalid?)
-
-### 113: Guarantee discarded
+### 112: Guarantee discarded
 
 Emitted when a guarantee is discarded from the local guarantee pool.
 
@@ -923,20 +925,12 @@ Emitted when a validator fails to receive an assurance from a peer (CE 141).
 
 ### 146: Assurance received
 
-Emitted when a valid assurance is received from a peer (CE 141).
+Emitted when an assurance is received from a peer (CE 141). This should be emitted as soon as the
+assurance is received, before checking if it is valid. If the assurance is found to be invalid, a
+"peer misbehaved" event should be emitted.
 
     Peer ID (Sender)
     Header Hash (Assurance anchor)
-
-### 147: Invalid assurance received
-
-Emitted when an _invalid_ assurance is received from a peer (CE 141).
-
-    Peer ID (Sender)
-    Header Hash (Assurance anchor)
-    [u8; ceil(C / 8)] (Availability bitfield; one bit per core, C is the total number of cores)
-    Ed25519 Signature (Assurance signature)
-    Reason (Why is the assurance considered invalid?)
 
 ## Preimage distribution events
 
