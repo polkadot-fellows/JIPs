@@ -456,26 +456,25 @@ Emitted when a block has been fully sent to or received from a peer (CE 128).
 
 These events concern generation and distribution of tickets for the Safrole lottery.
 
-### 80: Generating ticket
+### 80: Generating tickets
 
-Emitted when generation of a new Safrole ticket begins.
+Emitted when generation of a new set of Safrole tickets begins.
 
-    Epoch Index (The epoch the ticket is to be used in)
-    0 OR 1 (Single byte, ticket attempt number)
+    Epoch Index (The epoch the tickets are to be used in)
 
 ### 81: Ticket generation failed
 
 Emitted if Safrole ticket generation fails.
 
-    Event ID (ID of the corresponding "generating ticket" event)
+    Event ID (ID of the corresponding "generating tickets" event)
     Reason
 
-### 82: Generated ticket
+### 82: Generated tickets
 
-Emitted once a Safrole ticket has been generated.
+Emitted once a set of Safrole tickets has been generated.
 
-    Event ID (ID of the corresponding "generating ticket" event)
-    [u8; 32] (VRF output)
+    Event ID (ID of the corresponding "generating tickets" event)
+    len++[[u8; 32]] (Ticket VRF outputs, index is attempt number)
 
 ### 83: Ticket transfer failed
 
