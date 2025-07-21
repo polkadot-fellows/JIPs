@@ -138,15 +138,18 @@ The following "common" types are defined:
         (Single byte)
 
     Announced Preimage Forget Reason =
-        0 (Preimage not requested on-chain) OR
-        1 (Failed to acquire preimage) OR
-        2 (Too many announced preimages) OR
-        3 (Other)
+        0 (Provided on-chain) OR
+        1 (Not requested on-chain) OR
+        2 (Failed to acquire preimage) OR
+        3 (Too many announced preimages) OR
+        4 (Bad length) OR
+        5 (Other)
         (Single byte)
     Preimage Discard Reason =
-        0 (No longer requested on-chain) OR
-        1 (Too many preimages) OR
-        2 (Other)
+        0 (Provided on-chain) OR
+        1 (Not requested on-chain) OR
+        2 (Too many preimages) OR
+        3 (Other)
         (Single byte)
 
 ## Node information message
@@ -999,6 +1002,10 @@ Emitted when a preimage has been fully sent to or received from a peer (CE 143).
 ### 167: Preimage discarded
 
 Emitted when a preimage is discarded from the local preimage pool.
+
+Note that in the case where the preimage was requested by multiple services, there may not be a
+unique discard reason. For example, the preimage may have been provided to one service, while
+another service may have stopped requesting it. In this case, either reason may be reported.
 
     Hash
     u32 (Preimage length)
