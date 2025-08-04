@@ -63,7 +63,7 @@ The following "common" types are defined:
     Segments-Root = Hash
     Ed25519 Signature = [u8; 64]
 
-    Block Summary =
+    Block Outline =
         u32 (Size in bytes) ++
         u32 (Number of tickets) ++
         u32 (Number of preimages) ++
@@ -105,7 +105,7 @@ The following "common" types are defined:
         u16 (Export index, plus 2^15 if Root Identifier is a Work-Package Hash)
     Import Segment ID = u16 (Index in overall list of work-package imports, or for a proof page,
         2^15 plus index of a proven page)
-    Work-Item Summary =
+    Work-Item Outline =
         Service ID ++
         u32 (Payload size) ++
         Gas (Refine gas limit) ++
@@ -113,19 +113,19 @@ The following "common" types are defined:
         u32 (Sum of extrinsic lengths) ++
         len++[Import Spec] ++
         u16 (Number of exported segments)
-    Work-Package Summary =
+    Work-Package Outline =
         u32 (Work-package size in bytes) ++
         Header Hash (Anchor) ++
         Slot (Lookup anchor slot) ++
         len++[Work-Package Hash] (Prerequisites) ++
-        len++[Work-Item Summary]
+        len++[Work-Item Outline]
 
-    Work-Report Summary =
+    Work-Report Outline =
         u32 (Bundle size in bytes) ++
         Erasure-Root ++
         Segments-Root
 
-    Guarantee Summary =
+    Guarantee Outline =
         Work-Report Hash ++
         Slot ++
         len++[Validator Index] (Guarantors)
@@ -352,7 +352,7 @@ computed (which is included only in the following block).
 
     Event ID (ID of the corresponding "authoring" event)
     Header Hash (Of the new block)
-    Block Summary
+    Block Outline
 
 ### 43: Importing
 
@@ -361,7 +361,7 @@ author should emit the "authoring" event instead.
 
     Slot
     Header Hash
-    Block Summary
+    Block Outline
 
 ### 44: Block verification failed
 
@@ -468,7 +468,7 @@ emitted; emitting a "block request failed" event is optional.
     Event ID (ID of the corresponding "blocks requested" event)
     Slot
     Header Hash
-    Block Summary
+    Block Outline
     bool (Last block for the request?)
 
 ## Safrole ticket events
@@ -570,7 +570,7 @@ received.
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
     Core Index
     Work-Package Hash
-    Work-Package Summary
+    Work-Package Outline
 
 ### 95: Authorized
 
@@ -636,7 +636,7 @@ primary and secondary guarantors.
 
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
     Work-Report Hash
-    Work-Report Summary
+    Work-Report Outline
 
 ### 103: Work-report signature sent
 
@@ -659,7 +659,7 @@ sharing failed" event should be emitted instead, as well as a "peer misbehaved" 
 Emitted when a guarantor begins distributing a work-report guarantee to other validators, for
 potential inclusion in a block.
 
-    Guarantee Summary
+    Guarantee Outline
 
 ### 106: Sending guarantee
 
@@ -702,13 +702,13 @@ guarantee is checked. If the guarantee is found to be invalid, a "peer misbehave
 emitted.
 
     Event ID (ID of the corresponding "receiving guarantee" event)
-    Guarantee Summary
+    Guarantee Outline
 
 ### 112: Guarantee discarded
 
 Emitted when a guarantee is discarded from the local guarantee pool.
 
-    Guarantee Summary
+    Guarantee Outline
     Guarantee Discard Reason
 
 ## Availability events
