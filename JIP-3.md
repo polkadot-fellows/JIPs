@@ -566,8 +566,8 @@ indicating failure or a "work-report signature sent" event indicating success.
 ### 94: Work-package received
 
 Emitted once a work-package has been received from a builder or a primary guarantor (CE 133/134).
-This should be emitted _before_ authorization is checked, and ideally before the extrinsic data is
-received.
+This should be emitted _before_ authorization is checked, and ideally before the extrinsic data and
+imports are received/fetched.
 
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
     Core Index
