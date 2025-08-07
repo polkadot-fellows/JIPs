@@ -641,7 +641,7 @@ primary and secondary guarantors.
 ### 103: Work-report signature sent
 
 Emitted once a work-report signature for a shared work-package has been sent to the primary
-guarantor (CE 134).
+guarantor (CE 134). This is the final event in the guaranteeing pipeline for secondary guarantors.
 
     Event ID (ID of the corresponding "work-package being shared" event)
 
