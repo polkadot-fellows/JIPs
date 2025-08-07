@@ -488,7 +488,7 @@ Emitted if Safrole ticket generation fails.
     Event ID (ID of the corresponding "generating tickets" event)
     Reason
 
-### 82: Generated tickets
+### 82: Tickets generated
 
 Emitted once a set of Safrole tickets has been generated.
 
