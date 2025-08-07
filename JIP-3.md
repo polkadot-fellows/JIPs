@@ -133,9 +133,9 @@ The following "common" types are defined:
         Slot ++
         len++[Validator Index] (Guarantors)
     Guarantee Discard Reason =
-        0 (Work-report included in block) OR
+        0 (Work-package reported on-chain) OR
         1 (Replaced by better guarantee) OR
-        2 (Too old) OR
+        2 (Cannot be reported on-chain) OR
         3 (Too many guarantees) OR
         4 (Other)
         (Single byte)
