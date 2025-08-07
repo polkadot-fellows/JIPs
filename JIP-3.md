@@ -685,20 +685,31 @@ Emitted if sending a work-report guarantee succeeds (CE 135).
 
     Event ID (ID of the corresponding "sending guarantee" event)
 
-### 109: Receiving guarantee
+### 109: Guarantees distributed
+
+Emitted by the primary guarantor once they have finished distributing the work-report guarantee(s).
+This is the final event in the guaranteeing pipeline for primary guarantors.
+
+This event may be emitted even if the guarantor was not successful in sending the guarantee(s) to
+any other validator, although the guarantor may prefer to emit a "work-package failed" event in
+that case.
+
+    Event ID (ID of the corresponding "work-package submission" event)
+
+### 110: Receiving guarantee
 
 Emitted by the recipient when a guarantor begins sending a work-report guarantee (CE 135).
 
     Peer ID (Sender)
 
-### 110: Guarantee receive failed
+### 111: Guarantee receive failed
 
 Emitted if receiving a work-report guarantee fails (CE 135).
 
     Event ID (ID of the corresponding "receiving guarantee" event)
     Reason
 
-### 111: Guarantee received
+### 112: Guarantee received
 
 Emitted if receiving a work-report guarantee succeeds (CE 135). This should be emitted before the
 guarantee is checked. If the guarantee is found to be invalid, a "peer misbehaved" event should be
@@ -707,7 +718,7 @@ emitted.
     Event ID (ID of the corresponding "receiving guarantee" event)
     Guarantee Outline
 
-### 112: Guarantee discarded
+### 113: Guarantee discarded
 
 Emitted when a guarantee is discarded from the local guarantee pool.
 
