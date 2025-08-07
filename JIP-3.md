@@ -548,7 +548,9 @@ received work-package fails. This may be emitted at any point in the guarantor p
 
 Emitted when a "duplicate" work-package is received from a builder or shared by another guarantor
 (CE 133/134). A duplicate work-package is one that exactly matches (same hash) a previously
-received work-package. This event should be emitted instead of a "work-package received" event.
+received work-package. This event may be emitted at any point in the guarantor pipeline. In
+particular, it may be emitted instead of a "work-package received" event. An efficient
+implementation should check for duplicates early on to avoid wasted effort!
 
 In the case of a duplicate work-package received from a builder, no further events should be
 emitted referencing the submission.
