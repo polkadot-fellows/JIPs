@@ -654,19 +654,22 @@ sharing failed" event should be emitted instead, as well as a "peer misbehaved" 
     Event ID (ID of the corresponding "work-package submission" event)
     Peer ID (Secondary guarantor)
 
-### 105: Distributing guarantee
+### 105: Guarantee built
 
-Emitted when a guarantor begins distributing a work-report guarantee to other validators, for
-potential inclusion in a block.
+Emitted by the primary guarantor once a work-report guarantee has been built. If a secondary
+guarantor is slow to send their signature, this event may be emitted twice: once for the guarantee
+with just two signatures, and again for the guarantee with all three signatures.
 
+    Event ID (ID of the corresponding "work-package submission" event)
     Guarantee Outline
 
 ### 106: Sending guarantee
 
 Emitted when a guarantor begins sending a work-report guarantee to another validator, for potential
-inclusion in a block (CE 135).
+inclusion in a block (CE 135). This should reference the "guarantee built" event corresponding to
+the guarantee that is being sent.
 
-    Event ID (ID of the corresponding "distributing guarantee" event)
+    Event ID (ID of the corresponding "guarantee built" event)
     Peer ID (Recipient)
 
 ### 107: Guarantee send failed
