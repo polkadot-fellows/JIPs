@@ -65,6 +65,7 @@ The following "common" types are defined:
 
     Block Outline =
         u32 (Size in bytes) ++
+        Header Hash ++
         u32 (Number of tickets) ++
         u32 (Number of preimages) ++
         u32 (Total size of preimages in bytes) ++
@@ -114,13 +115,15 @@ The following "common" types are defined:
         len++[Import Spec] ++
         u16 (Number of exported segments)
     Work-Package Outline =
-        u32 (Work-package size in bytes) ++
+        u32 (Work-package size in bytes, excluding extrinsic data) ++
+        Work-Package Hash ++
         Header Hash (Anchor) ++
         Slot (Lookup anchor slot) ++
         len++[Work-Package Hash] (Prerequisites) ++
         len++[Work-Item Outline]
 
     Work-Report Outline =
+        Work-Report Hash ++
         u32 (Bundle size in bytes) ++
         Erasure-Root ++
         Segments-Root
@@ -351,7 +354,6 @@ block have been determined, ideally before accumulation is performed and the new
 computed (which is included only in the following block).
 
     Event ID (ID of the corresponding "authoring" event)
-    Header Hash (Of the new block)
     Block Outline
 
 ### 43: Importing
@@ -360,7 +362,6 @@ Emitted when importing of a block begins. This should not be emitted by the bloc
 author should emit the "authoring" event instead.
 
     Slot
-    Header Hash
     Block Outline
 
 ### 44: Block verification failed
@@ -467,7 +468,6 @@ emitted; emitting a "block request failed" event is optional.
 
     Event ID (ID of the corresponding "blocks requested" event)
     Slot
-    Header Hash
     Block Outline
     bool (Last block for the request?)
 
@@ -569,7 +569,6 @@ received.
 
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
     Core Index
-    Work-Package Hash
     Work-Package Outline
 
 ### 95: Authorized
@@ -635,7 +634,6 @@ Emitted once a work-report has been built for a work-package. This should be emi
 primary and secondary guarantors.
 
     Event ID (ID of the corresponding "work-package submission" or "work-package being shared" event)
-    Work-Report Hash
     Work-Report Outline
 
 ### 103: Work-report signature sent
