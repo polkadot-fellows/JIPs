@@ -228,14 +228,14 @@ field included in all event messages, which should be taken from the _first_ dro
 Emitted periodically (approximately every 2 seconds), to provide a summary of the node's current
 state. Note that most of this information can be derived from other events.
 
+    u32 (Total number of peers)
     u32 (Number of validator peers)
-    u32 (Number of non-validator peers)
     u32 (Number of peers with a block announcement stream open)
     [u8; C] (Number of guarantees in pool, by core; C is the total number of cores)
     u32 (Number of shards in availability store)
     u64 (Total size of shards in availability store, in bytes)
-    u32 (Number of announced preimages pending acquisition from peers)
     u32 (Number of preimages in pool, ready to be included in a block)
+    u32 (Total size of preimages in pool, in bytes)
 
 ### 11: Best block changed
 
