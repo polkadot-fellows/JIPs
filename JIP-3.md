@@ -432,33 +432,45 @@ Emitted when a block announcement is sent to or received from a peer (UP 0).
     Slot
     Header Hash
 
-### 63: Block request failed immediately
+### 63: Sending block request
 
-Emitted if a block request (CE 128) fails before the details of the request are sent/received. This
-could happen for example if the node receiving the request is overloaded.
+Emitted when a node begins sending a block request to a peer (CE 128).
 
-    Peer ID
-    Connection Side (Requester)
-    Reason
-
-### 64: Blocks requested
-
-Emitted when a sequence of blocks is requested from or by a peer (CE 128).
-
-    Peer ID
-    Connection Side (Requester)
+    Peer ID (Recipient)
     Header Hash
     0 (Ascending exclusive) OR 1 (Descending inclusive) (Direction, single byte)
     u32 (Maximum number of blocks)
 
+### 64: Receiving block request
+
+Emitted by the recipient when a node begins sending a block request (CE 128).
+
+    Peer ID (Sender)
+
 ### 65: Block request failed
 
-Emitted if a block request received from or sent to a peer fails (CE 128).
+Emitted when a block request (CE 128) fails.
 
-    Event ID (ID of the corresponding "blocks requested" event)
+    Event ID (ID of the corresponding "sending block request" or "receiving block request" event)
     Reason
 
-### 66: Block transferred
+### 66: Block request sent
+
+Emitted once a block request has been sent to a peer (CE 128). This should be emitted after the
+intial message containing the request details has been transmitted.
+
+    Event ID (ID of the corresponding "sending block request" event)
+
+### 67: Block request received
+
+Emitted once a block request has been received from a peer (CE 128).
+
+    Event ID (ID of the corresponding "receiving block request" event)
+    Header Hash
+    0 (Ascending exclusive) OR 1 (Descending inclusive) (Direction, single byte)
+    u32 (Maximum number of blocks)
+
+### 68: Block transferred
 
 Emitted when a block has been fully sent to or received from a peer (CE 128).
 
@@ -466,7 +478,7 @@ In the case of a received block, this event may be emitted before any checks are
 block is found to be invalid or to not match the request, a "peer misbehaved" event should be
 emitted; emitting a "block request failed" event is optional.
 
-    Event ID (ID of the corresponding "blocks requested" event)
+    Event ID (ID of the corresponding "sending block request" or "receiving block request" event)
     Slot
     Block Outline
     bool (Last block for the request?)
