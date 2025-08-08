@@ -994,38 +994,48 @@ event should be emitted instead).
     u32 (Preimage length)
     Announced Preimage Forget Reason
 
-### 163: Preimage request failed immediately
+### 163: Sending preimage request
 
-Emitted if a preimage request (CE 143) fails before the details of the request are sent/received.
-This could happen for example if the node receiving the request is overloaded.
+Emitted when a validator begins sending a preimage request to a peer (CE 143).
 
-    Peer ID
-    Connection Side (Requester)
-    Reason
-
-### 164: Preimage requested
-
-Emitted when a preimage is requested from or by a peer (CE 143).
-
-    Peer ID
-    Connection Side (Requester)
+    Peer ID (Recipient)
     Hash
+
+### 164: Receiving preimage request
+
+Emitted by the recipient when a validator begins sending a preimage request (CE 143).
+
+    Peer ID (Sender)
 
 ### 165: Preimage request failed
 
-Emitted if a preimage request received from or sent to a peer fails (CE 143).
+Emitted when a preimage request (CE 143) fails.
 
-    Event ID (ID of the corresponding "preimage requested" event)
+    Event ID (ID of the corresponding "sending preimage request" or "receiving preimage request" event)
     Reason
 
-### 166: Preimage transferred
+### 166: Preimage request sent
+
+Emitted once a preimage request has been sent to a peer (CE 143). This should be emitted after the
+initial message containing the request details has been transmitted.
+
+    Event ID (ID of the corresponding "sending preimage request" event)
+
+### 167: Preimage request received
+
+Emitted once a preimage request has been received from a peer (CE 143).
+
+    Event ID (ID of the corresponding "receiving preimage request" event)
+    Hash
+
+### 168: Preimage transferred
 
 Emitted when a preimage has been fully sent to or received from a peer (CE 143).
 
-    Event ID (ID of the corresponding "preimage requested" event)
+    Event ID (ID of the corresponding "sending preimage request" or "receiving preimage request" event)
     u32 (Preimage length)
 
-### 167: Preimage discarded
+### 169: Preimage discarded
 
 Emitted when a preimage is discarded from the local preimage pool.
 
