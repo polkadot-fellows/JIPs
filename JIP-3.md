@@ -79,9 +79,11 @@ The following "common" types are defined:
         u64 (Elapsed wall-clock time in nanoseconds)
     Is-Authorized Cost =
         Exec Cost (Total) ++
+        u64 (Time taken to load and compile the code, in nanoseconds) ++
         Exec Cost (Host calls)
     Refine Cost =
         Exec Cost (Total) ++
+        u64 (Time taken to load and compile the code, in nanoseconds) ++
         Exec Cost (historical_lookup calls) ++
         Exec Cost (machine/expunge calls) ++
         Exec Cost (peek/poke/pages calls) ++
@@ -92,6 +94,7 @@ The following "common" types are defined:
         u32 (Number of transfers processed) ++
         u32 (Number of items accumulated) ++
         Exec Cost (Total) ++
+        u64 (Time taken to load and compile the code, in nanoseconds) ++
         Exec Cost (read/write calls) ++
         Exec Cost (lookup calls) ++
         Exec Cost (query/solicit/forget/provide calls) ++
