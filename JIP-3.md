@@ -1,7 +1,7 @@
-# JIP-3: Structured logging
+# JIP-3: Telemetry
 
-Specification for structured logging of JAM nodes allowing integration into JAM Tart (Testing,
-Analytics and Research Telemetry).
+Specification for JAM node telemetry allowing integration into JAM Tart (Testing, Analytics and
+Research Telemetry).
 
 ## Connection to telemetry server
 
