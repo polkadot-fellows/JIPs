@@ -15,15 +15,17 @@ As soon as a light-client implementation is viable, the use of RPCs should be ph
 Both arguments, results and notification types are passed as an array, which may be `null` for certain results (marked as such).
 
 Types:
-- `Hash`: a 32 item array with each item numeric between 0 and 255 inclusive.
+- `Hash`: a 32 item array with each item numeric between 0 and 255 inclusive. Encoded as BASE64 with padding.
 - `Slot`: a single numeric item between 0 and $2^{32}-1$ inclusive.
-- `Blob`: an arbitrary length array each item numeric between 0 and 255 inclusive.
+- `Blob`: an arbitrary length array each item numeric between 0 and 255 inclusive. Encoded as BASE64 with padding.
 - `ServiceId`: a single numeric item between 0 and $2^{32}-1$ inclusive.
 - `Parameters`: an object describing the parameters of the JAM chain. See below for more information.
 
 Generally JSON RPC can be used over a variety of media and we don't make any assumptions of this, but it is envisaged that Websockets will be the usual medium, on port 19800.
 
 Subscriptions are handled in the usual way for JSON-RPC. A counterpart `unsubscribe...` RPC should be assumed for all `subscribe` RPCs; these are ommitted for brevity.
+
+All binary data, like hashes and blobs, is encoded as padded BASE64 strings (RFC 4648).
 
 ### `parameters`
 Returns the parameters of the current node/chain.
