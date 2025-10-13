@@ -539,10 +539,11 @@ These events concern the guaranteeing pipeline and guarantee pool.
 
 ### 90: Work-package submission
 
-Emitted when a builder opens a stream to submit a work-package (CE 133). This should be emitted as
-soon as the stream is opened, before the work-package is read from the stream.
+Emitted when a builder opens a stream to submit a work-package (CE 133/146). This should be emitted
+as soon as the stream is opened, before the work-package is read from the stream.
 
     Peer ID (Builder)
+    bool (Using CE 146?)
 
 ### 91: Work-package being shared
 
