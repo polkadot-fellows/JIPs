@@ -900,6 +900,48 @@ Emitted once a bundle has been successfully reconstructed from shards.
 
     Event ID (TODO, should reference auditing event)
 
+### 148: Sending bundle request
+
+Emitted when an auditor begins sending a bundle request to a guarantor (CE 147).
+
+    Event ID (TODO, should reference auditing event)
+    Peer ID (Guarantor)
+
+### 149: Receiving bundle request
+
+Emitted by the recipient when an auditor begins sending a bundle request (CE 147).
+
+    Peer ID (Auditor)
+
+### 150: Bundle request failed
+
+Emitted when a bundle request fails (CE 147). This should be emitted by both sides, ie the auditor
+and the guarantor.
+
+    Event ID (ID of the corresponding "sending bundle request" or "receiving bundle request" event)
+    Reason
+
+### 151: Bundle request sent
+
+Emitted once a bundle request has been sent to a guarantor (CE 147). This should be emitted after
+the initial message containing the request details has been transmitted.
+
+    Event ID (ID of the corresponding "sending bundle request" event)
+
+### 152: Bundle request received
+
+Emitted once a bundle request has been received from an auditor (CE 147).
+
+    Event ID (ID of the corresponding "receiving bundle request" event)
+    Erasure-Root
+
+### 153: Bundle transferred
+
+Emitted when a bundle request completes successfully (CE 147). This should be emitted by both
+sides, ie the auditor and the guarantor.
+
+    Event ID (ID of the corresponding "sending bundle request" or "receiving bundle request" event)
+
 ## Segment recovery events
 
 These events concern recovery of segments exported by work-packages. Segments are recovered by
