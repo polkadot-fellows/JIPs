@@ -1052,6 +1052,50 @@ segments-root. For efficiency, multiple segments may be reported in a single eve
     Event ID (ID of the corresponding "work-package submission" event)
     len++[u16] (Indices of the verified segments in the import list)
 
+### 173: Sending segment request
+
+Emitted when a guarantor begins sending a segment request to a previous guarantor (CE 148). Note
+that proof pages need not (and in fact cannot) be requested using this protocol, hence the use of
+`u16` rather than `Import Segment ID` to identify each requested segment.
+
+    Event ID (ID of the corresponding "work-package submission" event)
+    Peer ID (Previous guarantor)
+    len++[u16] (Indices of requested segments in overall list of work-package imports)
+
+### 174: Receiving segment request
+
+Emitted by the recipient when a guarantor begins sending a segment request (CE 148).
+
+    Peer ID (Guarantor)
+
+### 175: Segment request failed
+
+Emitted when a segment request fails (CE 148). This should be emitted by both sides.
+
+    Event ID (ID of the corresponding "sending segment request" or "receiving segment request" event)
+    Reason
+
+### 176: Segment request sent
+
+Emitted once a segment request has been sent to a previous guarantor (CE 148). This should be
+emitted after the initial message containing the request details has been transmitted.
+
+    Event ID (ID of the corresponding "sending segment request" event)
+
+### 177: Segment request received
+
+Emitted once a segment request has been received from a guarantor (CE 148).
+
+    Event ID (ID of the corresponding "receiving segment request" event)
+    u16 (Number of segments requested)
+
+### 178: Segments transferred
+
+Emitted when a segment request completes successfully (CE 148). This should be emitted by both
+sides.
+
+    Event ID (ID of the corresponding "sending segment request" or "receiving segment request" event)
+
 ## Preimage distribution events
 
 These events concern distribution of preimages for inclusion in blocks.
