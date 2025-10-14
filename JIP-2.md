@@ -15,9 +15,9 @@ As soon as a light-client implementation is viable, the use of RPCs should be ph
 Both arguments, results and notification types are passed as an array, which may be `null` for certain results (marked as such).
 
 Types:
-- `Hash`: a 32 item array with each item numeric between 0 and 255 inclusive. Encoded as BASE64 with padding.
+- `Hash`: a string, containing padded base64-encoded data, as per RFC 4648. The decoded data must be 32 bytes in length.
 - `Slot`: a single numeric item between 0 and $2^{32}-1$ inclusive.
-- `Blob`: an arbitrary length array each item numeric between 0 and 255 inclusive. Encoded as BASE64 with padding.
+- `Blob`: a string, containing padded base64-encoded data, as per RFC 4648. The decoded data can have an arbitrary length.
 - `ServiceId`: a single numeric item between 0 and $2^{32}-1$ inclusive.
 - `Parameters`: an object describing the parameters of the JAM chain. See below for more information.
 
