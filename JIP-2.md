@@ -91,6 +91,8 @@ Returns the activity statistics stored in the posterior state of the block with 
 ### `subscribeStatistics`
 Subscribe to updates of the activity statistics stored in chain state. If `finalized` is true, the subscription will track the latest finalized block. If `finalized` is false, the subscription will track the head of the "best" chain. Note that in the latter case the reported statistics may never be included in the finalized chain. The statistics are encoded as per the GP.
 - Type: __Subscription__
+- Arguments:
+  - `boolean`: `finalized`
 - Notification type: `Blob`
 
 ### `serviceData`
@@ -104,6 +106,8 @@ Returns the service data for the given service ID. The data are encoded as per t
 ### `subscribeServiceData`
 Subscribe to updates of the service data for the given service ID. If `finalized` is true, the subscription will track the latest finalized block. If `finalized` is false, the subscription will track the head of the "best" chain. Note that in the latter case the reported service info may never be included in the finalized chain. The data are encoded as per the GP.
 - Type: __Subscription__
+- Arguments:
+  - `boolean`: `finalized`
 - Notification type: `Blob`
 
 ### `serviceValue`
@@ -118,6 +122,8 @@ Returns the value associated with the given service ID and key in the posterior 
 ### `subscribeServiceValue`
 Subscribe to updates of the value associated with the given service ID and key. If `finalized` is true, the subscription will track the latest finalized block. If `finalized` is false, the subscription will track the head of the "best" chain. Note that in the latter case reported value changes may never be included in the finalized chain. The `value` field of subscription messages will be `null` when there is no value associated with the given service ID and key.
 - Type: __Subscription__
+- Arguments:
+  - `boolean`: `finalized`
 - Notification type: Either `null` or `Blob`
 
 ### `servicePreimage`
@@ -132,6 +138,8 @@ Returns the preimage associated with the given service ID and hash in the poster
 ### `subscribeServicePreimage`
 Subscribe to updates of the preimage associated with the given service ID and hash. If `finalized` is true, the subscription will track the latest finalized block. If `finalized` is false, the subscription will track the head of the "best" chain. Note that in the latter case reported preimage changes may never be included in the finalized chain. The `preimage` field of subscription messages will be `null` when there is no preimage associated with the given service ID and hash.
 - Type: __Subscription__
+- Arguments:
+  - `boolean`: `finalized`
 - Notification type: Either `null` or `Blob`
     
 ### `serviceRequest`
@@ -147,6 +155,8 @@ Returns the preimage request associated with the given service ID and hash/len i
 ### `subscribeServiceRequest`
 Subscribe to updates of the preimage associated with the given service ID and hash. If `finalized` is true, the subscription will track the latest finalized block. If `finalized` is false, the subscription will track the head of the "best" chain. Note that in the latter case reported preimage changes may never be included in the finalized chain. The `request` field of subscription messages will be `null` when there is no preimage request associated with the given service ID, hash and length.
 - Type: __Subscription__
+- Arguments:
+  - `boolean`: `finalized`
 - Notification type: Either `null` or array of `Slot`
     
 ### `beefyRoot`
