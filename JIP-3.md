@@ -44,6 +44,8 @@ The following types are defined:
     Timestamp = u64 (Microseconds since the beginning of the Jam "Common Era")
     Event ID = u64
 
+    JAM Parameters = Exactly as returned by the fetch host call defined in the GP
+
     Peer ID = [u8; 32] (Ed25519 public key)
     Peer Address = [u8; 16] ++ u16 (IPv6 address plus port)
     Connection Side = 0 (Local) OR 1 (Remote)
@@ -164,6 +166,7 @@ The first message sent on each connection to the telemetry server should contain
 the connecting node:
 
     0 (Single byte, telemetry protocol version)
+    JAM Parameters
     Peer ID
     Peer Address
     u32 (Node flags)
