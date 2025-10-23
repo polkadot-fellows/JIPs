@@ -32,9 +32,9 @@ In the type/message definitions below:
   its length when encoding. The length should be encoded using variable-length general natural
   number serialization.
 
-## Common types
+## Types
 
-The following "common" types are defined:
+The following types are defined:
 
     bool = 0 (False) OR 1 (True)
     Option<T> = 0 OR (1 ++ T)
