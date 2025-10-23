@@ -215,10 +215,17 @@ before they can be transmitted over the connection to the telemetry server, the 
 should be replaced with a single "dropped" event:
 
     Timestamp (Timestamp of the last dropped event)
-    u32 (Number of dropped events)
+    u64 (Number of dropped events)
 
-Dropped events should not be common and are expected to only be produced if the node or network
-become overloaded.
+A dropped event may also be emitted as the first event on a connection, if the events emitted by
+the node will not start with ID 0. In this case the number of dropped events should be set to the
+ID of the following event and the timestamps should be filled with plausible values. A node may
+wish to do this for example if it loses its connection to the telemetry server and then reconnects,
+to avoid having to renumber events internally. Note that this is not intended to require any
+special handling on the server.
+
+Dropped events should not be common and except in the case just described are expected to only be
+produced if the node or network become overloaded.
 
 Note that each dropped event message contains _two_ `Timestamp` fields: the universal `Timestamp`
 field included in all event messages, which should be taken from the _first_ dropped event, and the
