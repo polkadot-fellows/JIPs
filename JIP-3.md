@@ -167,6 +167,7 @@ the connecting node:
 
     0 (Single byte, telemetry protocol version)
     JAM Parameters
+    Header Hash (Genesis header hash)
     Peer ID
     Peer Address
     u32 (Node flags)
