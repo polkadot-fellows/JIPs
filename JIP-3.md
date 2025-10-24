@@ -173,6 +173,7 @@ the connecting node:
     u32 (Node flags)
     String<32> (Name of node implementation, eg "PolkaJam")
     String<32> (Version of node implementation, eg "1.0")
+    String<16> (Gray Paper version implemented by the node, eg "0.7.1")
     String<512> (Freeform note with additional information about the node)
 
 The node flags field should be treated as a bitmask. The following bits are defined:
