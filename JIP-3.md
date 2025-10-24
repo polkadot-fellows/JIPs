@@ -414,7 +414,10 @@ and importers.
     Event ID (ID of the corresponding "authoring" or "importing" event)
     len++[Service ID ++ Accumulate Cost] (Accumulated services and the cost of their accumulate calls)
 
-Each service should be listed at most once in the accumulated services list.
+Each service should be listed at most once in the accumulated services list. The length of the
+accumulated services list should not exceed 500. If more than 500 services are accumulated in a
+block, the costs of the services with lowest total gas usage should be combined and reported with
+service ID 0xffffffff (note that this is otherwise not a valid service ID).
 
 ## Block distribution events
 
