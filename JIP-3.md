@@ -417,7 +417,8 @@ and importers.
 Each service should be listed at most once in the accumulated services list. The length of the
 accumulated services list should not exceed 500. If more than 500 services are accumulated in a
 block, the costs of the services with lowest total gas usage should be combined and reported with
-service ID 0xffffffff (note that this is otherwise not a valid service ID).
+service ID 0xffffffff (note that this is otherwise not a valid service ID). Ties should be broken
+by combining services with greater IDs.
 
 ## Block distribution events
 
