@@ -15,8 +15,8 @@ The chain specification root object includes the following keys:
 The example below shows a basic chain specification file. Note that this does not contain a valid header or state for brevity.
 ```json
 {
-  "bootnodes": ["evysk4p563r2kappaebqykryquxw5lfcclvf23dqqhi5n765h4kkb@192.168.50.18:62061", "egy5qba5fyjf7hn7bxeroo7ncqfk5otxvo6or77k23o6pjqnxdoxb@192.168.50.20:63747"],
   "id": "testnet",
+  "bootnodes": ["evysk4p563r2kappaebqykryquxw5lfcclvf23dqqhi5n765h4kkb@192.168.50.18:62061", "egy5qba5fyjf7hn7bxeroo7ncqfk5otxvo6or77k23o6pjqnxdoxb@192.168.50.20:63747"],
   "protocol_parameters": "0a00000000000000010000000000000064000000000000000200004b00000c000000809698000000000080f0fa020000000000ca9a3b00000000002d310100000000080000001000080003004038000003000800060050000400000080000500060000fa0000017cd20000093d0004000000000c00000204000000c0000080000000000c00000a000000",
   "genesis_header": "1ee155ace9c40292074cb6aff8c9ccdd273c81648ff1149ef36bcea6ebb8a3e25bb30a42c1e62f0afda5f0a4e8a562f7a13a24cea00ee81917b86b89e801314aa4aa54d1a89973300d7e2493a1b512fecd848f4e8a63fb3a59d38a6b2c1610d9a2c98544eeb3df",
   "genesis_state": {
