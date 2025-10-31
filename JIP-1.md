@@ -8,11 +8,14 @@ Index: 100
 Name: `log`
 Gas usage: 0
 Input registers: $\omega_{7\dots+5}$
-Output registers: $\{\}$
+Output registers: $\omega'_7$
 
 - `level` = $\omega_7$
 - `target` = $\begin{cases}\varnothing &\text{when } \omega_8 = 0 \wedge \omega_9 = 0 \\ \mu_{\omega_8\dots+\omega_9} &\text{otherwise}\end{cases}$
 - `message` = $\mu_{\omega_{10}\dots+\omega_{11}}$
+
+- $\omega'_7$ = `WHAT`. `WHAT` is always returned so that authorizer/service behaviour is the same
+  whether or not this JIP is implemented.
 
 ### Side-effects
 
@@ -41,7 +44,7 @@ Note that `<SERVICE_ID>` is assumed to be the integer index of the service for w
 
 ```
 <YYYY-MM-DD hh-mm-ss> <LEVEL>[@<CORE>]?[#<SERVICE_ID>]? [<TARGET>]? <MESSAGE>
-``` 
+```
 
 #### Example log item
 
