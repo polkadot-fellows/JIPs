@@ -37,7 +37,7 @@ Otherwise, express a message to user according to the user-agent.
 
 ### Display format for console logging
 
-Note that `<CORE>` is assumed to be the integer index of the core on which the PVM is executing, which may not exist (e.g. in the On-Transfer logic).
+Note that `<CORE>` is assumed to be the integer index of the core on which the PVM is executing, which may not exist (e.g. in the Accumulate logic).
 
 Note that `<SERVICE_ID>` is assumed to be the integer index of the service for which the PVM is executing, which may not exist (e.g. in the Is-Authorized logic).
 
