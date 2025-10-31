@@ -7,14 +7,14 @@ A host call for passing a debugging message from the service/authorizer to the h
 Index: 100
 Name: `log`
 Gas usage: 0
-Input registers: $\omega_{7\dots+5}$
-Output registers: $\omega'_7$
+Input registers: $\varphi_{7\dots+5}$
+Output registers: $\varphi'_7$
 
-- `level` = $\omega_7$
-- `target` = $\begin{cases}\varnothing &\text{when } \omega_8 = 0 \wedge \omega_9 = 0 \\ \mu_{\omega_8\dots+\omega_9} &\text{otherwise}\end{cases}$
-- `message` = $\mu_{\omega_{10}\dots+\omega_{11}}$
+- `level` = $\varphi_7$
+- `target` = $\begin{cases}\varnothing &\text{when } \varphi_8 = 0 \wedge \varphi_9 = 0 \\ \mu_{\varphi_8\dots+\varphi_9} &\text{otherwise}\end{cases}$
+- `message` = $\mu_{\varphi_{10}\dots+\varphi_{11}}$
 
-- $\omega'_7$ = `WHAT`. `WHAT` is always returned so that authorizer/service behaviour is the same
+- $\varphi'_7$ = `WHAT`. `WHAT` is always returned so that authorizer/service behaviour is the same
   whether or not this JIP is implemented.
 
 ### Side-effects
