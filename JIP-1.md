@@ -13,7 +13,7 @@ A host call for passing a debugging message from the service/authorizer to the h
 **Input registers**: $\varphi_{7\dots+5}$
 
 - `level` = $\varphi_7$
-- `target` = $\begin{cases}\varnothing &\text{when } \varphi_8 = 0 \wedge \varphi_9 = 0 \\ \mu_{\varphi_8\dots+\varphi_9} &\text{otherwise}\end{cases}$
+- `target` = $\varnothing$ if $\varphi_8 = 0 \wedge \varphi_9 = 0$, otherwise $\mu_{\varphi_8\dots+\varphi_9}$
 - `message` = $\mu_{\varphi_{10}\dots+\varphi_{11}}$
 
 **Output registers**: $\varphi'_7$
