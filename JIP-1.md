@@ -8,7 +8,7 @@ A host call for passing a debugging message from the service/authorizer to the h
 
 **Name**: `log`
 
-**Gas usage**: 0
+**Gas usage**: 10 (same as host-call with bad index)
 
 **Input registers**: $\varphi_{7\dots+5}$
 
