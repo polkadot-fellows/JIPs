@@ -48,6 +48,21 @@ For convenience the following common types are defined:
   - `"header_hash"`: Hash. Header hash of the block that triggered this update.
   - `"slot"`: Number. Slot of the block that triggered this update.
   - `"value"`: Subscription-specific.
+- State Key: A String, containing padded Base64-encoded binary data, as per RFC 4648. The decoded
+  data must be exactly 31 bytes in length: a raw state key, as defined by the state Merklization
+  appendix of the GP.
+- Range Proof: An Object proving the presence (or absence) of a contiguous range of state keys in
+  the state of some block. It has the following members:
+  - `"nodes"`: Array of Blobs. Each Blob must decode to exactly 64 bytes in length: one trie node,
+    encoded as per the state Merklization appendix of the GP. These are the nodes on the paths
+    from the root to the range's boundary keys. The order of the Array carries no meaning.
+  - `"values"`: Array of `[key, value]` Arrays, where `key` is a State Key and `value` is a Blob.
+    The pairs are ordered by key, ascending.
+
+  The proof does not include the state root. To verify, the client rebuilds a partial trie from
+  `"nodes"` and `"values"`, computes its root, and compares it against a state root it already
+  trusts. Verification must also check non-existence at the left boundary if the first returned
+  key is not the requested start key.
 
 ## Error codes
 
@@ -178,6 +193,49 @@ Returns the posterior state root of the block with the given header hash.
 1. `header_hash`: Hash.
 #### Result
 Hash: The state root.
+
+### `stateValue(header_hash, key)`
+Returns the value stored under the given raw state key in the posterior state of the block with
+the given header hash. Unlike `serviceValue`, this method takes a full 31-byte state key, so it
+can be used to read chain-level state components as well as any service state whose key the
+client can compute.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `key`: State Key.
+#### Result
+Null if there is no value under the given key, otherwise a Blob containing the value.
+
+### `subscribeStateValue(key, finalized)`
+Subscribe to updates of the value stored under the given raw state key. An update is sent only
+when the value changes.
+#### Parameters
+1. `key`: State Key.
+2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
+   "best" chain.
+#### Subscription update `"result"`
+Chain Subscription Update. The `"value"` member is Null when there is no value under the given
+key, otherwise a Blob containing the value.
+
+### `stateProof(header_hash, start_key, end_key, size_limit)`
+Returns a Merkle proof for the state entries in the key range `[start_key, end_key]` (inclusive)
+in the posterior state of the block with the given header hash.
+
+The size limit bounds the total size of the returned keys and values, in octets. It is a soft
+limit: at least one key/value pair is returned even if it alone exceeds the limit, and encoding
+overhead is not counted. If the limit cuts the range short, the last returned key tells the
+client where to continue: request again with `start_key` set just above it.
+
+To prove a single key `k`, use `stateProof(header_hash, k, k, size_limit)`.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `start_key`: State Key: First key of the range.
+3. `end_key`: State Key: Last key of the range (inclusive).
+4. `size_limit`: Number: Soft limit on the total size of the returned keys and values, in octets.
+#### Result
+Range Proof. If no keys exist in the range, the proof has an empty `"values"` Array and its
+`"nodes"` prove non-existence.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
