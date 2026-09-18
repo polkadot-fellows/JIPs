@@ -10,7 +10,7 @@ The chain specification root object includes the following keys:
 - `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where `<name>` is the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". `<ip>` is a string containing IPv4 or IPv6 address of the node. IPv6 address may optionally be specified in square brackets (`[]`). `<port>` is an IP port number.
 - `genesis_header` - A hex string containing JAM-serialized genesis block header.
 - `genesis_state` - An object defining genesis state. Each key is a 62-character hex string defining the 31-byte state key. The values are arbitrary length hex strings.
-- `protocol_parameters` - A hex string containing JAM-serialized protocol parameters. Encoding matches protocol parameters returned by the [`fetch`](https://graypaper.fluffylabs.dev/#/7e6ff6a/32e400324e01?v=0.6.7) host call defined in the Gray Paper (B.6)
+- `protocol_parameters` - A hex string containing JAM-serialized protocol parameters. Encoding matches protocol parameters returned by the [`fetch`](https://graypaper.fluffylabs.dev/#/07f041d/3a13013ad501?v=0.8.0) host call defined in the Gray Paper (B.6)
 
 The example below shows a basic chain specification file. Note that this does not contain a valid header or state for brevity.
 ```json
@@ -25,7 +25,7 @@ The example below shows a basic chain specification file. Note that this does no
     "0a000000000000000000000000000000000000000000000000000000000000": "0000",
     "00fe00ff00ff00ffa61a1135d89447673d804e5619daab939cd9c8936d4171": "5000156a616d2d626f6f7473747261702d7365727669636506302e312e32310a"
   },
-  "protocol_parameters": "0a00000000000000010000000000000064000000000000000200004b00000c000000809698000000000080f0fa020000000000ca9a3b00000000002d310100000000080000001000080003004038000003000800060050000400000080000500060000fa0000017cd20000093d0004000000000c00000204000000c0000080000000000c00000a000000"
+  "protocol_parameters": "0a00000000000000010000000000000064000000000000000200200000000c000000809698000000000080f0fa020000000000ca9a3b00000000002d31010000000008001000080003001800000008000600500004008000050000fa00008070d20000093d00000c000000c0000080000000000c00000a000000"
 }
 ```
 
