@@ -271,6 +271,18 @@ Subscribe to updates of the preimage associated with the given service ID and ha
 Chain Subscription Update. The `"value"` member is Null if the preimage has not been provided to
 the service, otherwise it is a Blob containing the preimage.
 
+### `servicePreimageLen(header_hash, id, hash)`
+Returns the length of the preimage of the given hash, if it has been provided to the given service
+in the posterior state of the block with the given header hash. 
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `id`: Number: The ID of the service.
+3. `hash`: Hash: The hash whose preimage length is being requested.
+#### Result
+Null if the preimage has not been provided to the given service, otherwise a Number giving the
+length of the preimage in octets.
+
 ### `serviceRequest(header_hash, id, hash, len)`
 Returns the preimage request associated with the given service ID and hash/length in the posterior
 state of the block with the given header hash.
