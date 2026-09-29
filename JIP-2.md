@@ -112,9 +112,8 @@ the remainder.
 The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
 in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
 child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
-7 of octet 0) cleared, since that bit position holds the parent's discriminator. The entry for a
-hash-only leaf (value form 34) is the hash of its value, and takes its place in the sequence at the
-position of the leaf's `L` tag.
+7 of octet 0) cleared. The entry for a hash-only leaf (value form 34) is the hash of its value, and
+takes its place in the sequence at the position of the leaf's `L` tag.
 
 The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
 being the leaf's depth and the first $d$ bits being the path to it. These suffixes are concatenated,
@@ -167,12 +166,11 @@ A verifier must reject a proof if any of the following holds:
 12. The identity of the root of the proof subtree differs from the trusted state root.
 
 These rules give every proof subtree, with a given kind for each leaf, exactly one encoding. The
-verifier accepts any canonically encoded proof subtree whose root identity is the state root: it
-checks neither that
-the subtree is the smallest the query requires nor the leaf kinds against the query. A proof may
-therefore expand more of the trie than the query needs, which proves more keys, never fewer; the
-subtree and kinds a server produces are defined under [Queries](#queries), and a client may bound
-the size of the proofs it accepts.
+verifier accepts any canonically encoded proof subtree whose root identity is the state root. It
+checks neither that the subtree is minimal for the query nor that the leaf kinds conform to the
+query. A proof may therefore expand more of the trie than the query needs, which proves more keys,
+never fewer; the subtree and kinds a server produces are defined under [Queries](#queries), and a
+client may bound the size of the proofs it accepts.
 
 ### Verification
 
