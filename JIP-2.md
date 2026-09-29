@@ -245,18 +245,29 @@ All other leaves, and all leaves under `none`, are full. The value form is the v
 the value is at most 32 octets long, and 33 otherwise; this document never produces hash-only
 leaves, though a verifier must accept them.
 
-The size limit applies to the leaves whose keys lie within a range, taken in ascending key order
-across all ranges. Each such leaf is charged a size of 1, plus $\lceil (248 - d) / 8 \rceil$ if it
-is a full leaf, plus the length of its data in the `values` section. The charge is computed per leaf
-and is deliberately conservative: key suffixes are packed without per-leaf padding, so the charged
-total may exceed the octets the leaves actually add. If adding the next leaf's size to the total of
-the leaves already included would exceed the size limit, and at least one leaf has been included,
-the server stops: the reply is truncated, `"complete"` is False and `"proven_through"` is the key of
-the last included leaf; if every such leaf fits, `"complete"` is True. The proof of a truncated
-reply is the proof of the query cut at `"proven_through"`. The query cut at a key $k$ is the query
-with every range whose padded `start` exceeds $k$ removed and every remaining range whose padded
-`end` exceeds $k$ ending at $k$; the listed keys are unchanged. Listed keys are never dropped and do
-not count against the size limit.
+The size limit applies only to leaves whose keys lie within a range. Listed keys never count against
+it and are never dropped; a reply may therefore exceed the limit, see the size cap under
+`stateProof`. Range leaves are considered in ascending key order across all ranges.
+
+A leaf's charged size is:
+
+- 1, for its kind octet;
+- $\lceil (248 - d) / 8 \rceil$ if it is a full leaf, for its key suffix;
+- the length of its data in the `values` section.
+
+The charge is computed per leaf and is deliberately conservative: key suffixes are packed without
+per-leaf padding, so the charged total may exceed the octets the leaves actually add.
+
+The server includes range leaves in order while their charged total stays within the limit; the
+first range leaf is always included. If a range leaf does not fit, the server stops there:
+`"complete"` is False and `"proven_through"` is the key of the last included leaf. If every range
+leaf fits, `"complete"` is True.
+
+The query cut at a key $k$ is a shorter query derived from the request: it keeps the listed keys,
+removes every range whose padded `start` exceeds $k$, and ends every remaining range whose padded
+`end` exceeds $k$ at $k$. A truncated reply is not a special form of proof: it carries exactly the
+proof that a request for the query cut at `"proven_through"` would have produced, and the client
+verifies it as such.
 
 A client receiving a truncated reply must verify it against the query cut at `"proven_through"`,
 and may continue with a query whose ranges start after it. The cut cannot be inferred from the
@@ -498,15 +509,17 @@ The server rejects the request with the JSON-RPC invalid params error if the lis
 strictly ascending, a range bound is longer than 31 octets, a range's padded `start` exceeds its
 padded `end`, a range's padded `start` does not exceed the previous range's padded `end`, a listed
 key lies within a range, `known` is not one of the Strings below, or `size_limit` is not a
-non-negative integer. Servers may lower
-`size_limit` to a cap of their choosing, and may cap the number of listed keys plus ranges,
-rejecting a request over that cap with the same error.
+non-negative integer. Servers may lower `size_limit` to a cap of their choosing, and may cap the
+number of listed keys plus ranges, rejecting a request over that cap with the same error. Since
+listed keys are never dropped, a reply may exceed any size limit; a server may reject a request
+whose reply would exceed its response size cap with the same error, in which case the client should
+split its listed keys across several requests.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
 2. `keys`: Array of State Keys: The listed keys, strictly ascending.
 3. `ranges`: Array of `[start, end]` Arrays of Blobs: The ranges, ascending. Each bound must
-   decode to between 0 and 31 bytes; both bounds are inclusive.
+   decode to between 0 and 31 octets; both bounds are inclusive.
 4. `known`: String: The known mode, one of `"none"`, `"keys"` and `"keys_and_values"`.
 5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the range
    leaves in the proof, in octets.
