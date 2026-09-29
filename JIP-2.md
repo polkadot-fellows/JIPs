@@ -60,26 +60,13 @@ A State Proof proves the values under some state keys, and the absence of other 
 state of some block. It carries only the parts of the state trie that the query needs, and is
 verified against a state root the client already trusts, e.g. one returned by `stateRoot`.
 
-### Trie
-
-The state trie is as defined by the state Merklization appendix of the GP. Keys are 31 octets,
-i.e. 248 bits, read from the most significant bit of octet 0. The trie is binary, with no path
-compression: the node at depth $d$ (the number of branches above it) covers exactly the keys
-whose first $d$ bits are the path from the root to it. A subtree covering two or more keys of the
-state is a branch, a subtree covering exactly one key is a leaf, and a subtree covering no keys is
-empty. The identity of an empty subtree is the zero hash (32 zero octets); the identity of any
-other node is the blake2b-256 hash of its 64-octet encoding, as per the state Merklization
-appendix of the GP. A branch's encoding holds its left child's identity without that identity's
-most significant bit (255 bits), followed by its right child's identity in full. A leaf's
-encoding holds its key and either its value, if the value is at most 32 octets long, or the hash
-of its value. As a leaf sits at the first depth at which its key is the only key with that
-prefix, a leaf's key always starts with the bits of the path to it.
-
 ### Proof subtree
 
 A proof answers a query consisting of listed keys and inclusive key ranges, as defined under
-[Queries](#queries). A trie node is expanded if a listed key starts with the path to it, or if a
-key starting with the path to it lies within a listed range. The proof subtree consists of the
+[Queries](#queries). The path to a trie node is the sequence of bits walked from the root to
+reach it, and the node's depth is the length of that path. A trie node is expanded if a listed
+key starts with the path to it, or if a key starting with the path to it lies within a listed
+range. The proof subtree consists of the
 expanded nodes and both children of every expanded branch. Each of its nodes appears as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
@@ -108,7 +95,8 @@ lengths:
               then zero bits up to the next octet boundary
     values  = value data per leaf, as per its kind octet, in tag order
 
-This document defines version 0 only. Tag order is the order of the nodes in the `tags` section,
+The version octet identifies the encoding defined here, version 0; later revisions of this
+document may define further versions. Tag order is the order of the nodes in the `tags` section,
 i.e. pre-order: a `B` is followed by the tags of its left subtree and then those of its right
 subtree.
 
@@ -154,8 +142,7 @@ value is longer than 32 octets, with the given hash in place of the value's hash
 
 A verifier must reject a proof if any of the following holds:
 
-1. The version octet is not 0. A verifier should report this distinctly from the other rules, so
-   that a client can fall back to a version the server knows.
+1. The version octet is not 0.
 2. The proof is empty, or the `tags` section ends before the subtree is complete.
 3. A padding bit of the `tags` section is set.
 4. A `B` is at depth 248 or deeper.
