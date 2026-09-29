@@ -237,9 +237,11 @@ A query consists of:
   `keys_and_values` declares that it holds these keys with their values. The server does not
   check the declaration.
 
-A leaf is eligible for elision if its key is a listed key or lies within a range, and no listed
-key other than the leaf's key starts with the path to it. The second condition keeps rule 10
-from finding two keys for one leaf when an absent listed key shares the path to a present one.
+A leaf is eligible for elision if its key is a listed key or lies within a range, and no listed key
+other than the leaf's key starts with the path to it. The second condition keeps rule 10 from
+finding two keys for one leaf when an absent listed key shares the path to a present one; it is
+judged against the listed keys of the request, not of the cut query, since a key the cut drops is
+still among the client's known keys.
 Under `keys`, eligible leaves are key-elided; under `keys_and_values`, they are fully elided.
 All other leaves, and all leaves under `none`, are full. A full leaf's value form is the value's
 length if the value is at most 32 octets long, and otherwise 33, except for a leaf whose key is
