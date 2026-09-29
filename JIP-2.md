@@ -241,38 +241,44 @@ A leaf is eligible for elision if its key is a listed key or lies within a range
 key other than the leaf's key starts with the path to it. The second condition keeps rule 10
 from finding two keys for one leaf when an absent listed key shares the path to a present one.
 Under `keys`, eligible leaves are key-elided; under `keys_and_values`, they are fully elided.
-All other leaves, and all leaves under `none`, are full. The value form is the value's length if
-the value is at most 32 octets long, and 33 otherwise; this document never produces hash-only
-leaves, though a verifier must accept them.
+All other leaves, and all leaves under `none`, are full. A full leaf's value form is the value's
+length if the value is at most 32 octets long, and otherwise 33, except for a leaf whose key is
+neither a listed key nor within a range: such a leaf is in the proof only because a listed key's
+path ends at it or because it borders a range, its value was not asked for, and it uses value form
+34, shipping the value's hash instead.
 
-The size limit applies only to leaves whose keys lie within a range. Listed keys never count against
-it and are never dropped; a reply may therefore exceed the limit, see the size cap under
-`stateProof`. Range leaves are considered in ascending key order across all ranges.
+The listed keys and the ranges form one ascending sequence of items, since the keys are sorted, the
+ranges are sorted and disjoint, and no key lies within a range. The size limit applies to that
+sequence as a whole: the server considers listed keys and range leaves together, in ascending key
+order.
 
-A leaf's charged size is:
+Each item is charged the size of the leaf the proof contains for it: a listed key is charged for the
+leaf its path ends at, which holds either that key or, if the key is absent, another key, and
+nothing if its path ends at an empty subtree; a range is charged for each leaf within it. A leaf's
+charged size is:
 
 - 1, for its kind octet;
-- $\lceil (248 - d) / 8 \rceil$ if it is a full leaf, for its key suffix;
-- the length of its data in the `values` section.
+- $\lceil (248 - d) / 8 \rceil$ if its key suffix is shipped;
+- the length of its data in the `values` section, or 32 for a hash-only leaf.
 
 The charge is computed per leaf and is deliberately conservative: key suffixes are packed without
 per-leaf padding, so the charged total may exceed the octets the leaves actually add.
 
-The server includes range leaves in order while their charged total stays within the limit; the
-first range leaf is always included. If a range leaf does not fit, the server stops there:
-`"complete"` is False and `"proven_through"` is the key of the last included leaf. If every range
-leaf fits, `"complete"` is True.
+The server includes items in order while their charged total stays within the limit; the first item
+is always included. If an item does not fit, the server stops there: `"complete"` is False and
+`"proven_through"` is the key of the last included item, whether it is a listed key or a key within
+a range. If every item fits, `"complete"` is True.
 
-The query cut at a key $k$ is a shorter query derived from the request: it keeps the listed keys,
-removes every range whose padded `start` exceeds $k$, and ends every remaining range whose padded
-`end` exceeds $k$ at $k$. A truncated reply is not a special form of proof: it carries exactly the
-proof that a request for the query cut at `"proven_through"` would have produced, and the client
-verifies it as such.
+The query cut at a key $k$ is a shorter query derived from the request: it keeps the listed keys
+that do not exceed $k$, removes every range whose padded `start` exceeds $k$, and ends every
+remaining range whose padded `end` exceeds $k$ at $k$. A truncated reply is not a special form of
+proof: it carries exactly the proof that a request for the query cut at `"proven_through"` would
+have produced, and the client verifies it as such.
 
-A client receiving a truncated reply must verify it against the query cut at `"proven_through"`,
-and may continue with a query whose ranges start after it. The cut cannot be inferred from the
-proof, and a truncated proof may still cover the whole query, as an absent listed key can expand
-the region the cut removed; `"complete"` and `"proven_through"` are authoritative.
+A client receiving a truncated reply must verify it against the query cut at `"proven_through"`, and
+may continue with the remaining listed keys and the ranges cut to start after it. The cut cannot be
+inferred from the proof, and a truncated proof may still cover the whole query, as an absent listed
+key can expand the region the cut removed; `"complete"` and `"proven_through"` are authoritative.
 
 ### Test vectors
 
@@ -510,10 +516,9 @@ strictly ascending, a range bound is longer than 31 octets, a range's padded `st
 padded `end`, a range's padded `start` does not exceed the previous range's padded `end`, a listed
 key lies within a range, `known` is not one of the Strings below, or `size_limit` is not a
 non-negative integer. Servers may lower `size_limit` to a cap of their choosing, and may cap the
-number of listed keys plus ranges, rejecting a request over that cap with the same error. Since
-listed keys are never dropped, a reply may exceed any size limit; a server may reject a request
-whose reply would exceed its response size cap with the same error, in which case the client should
-split its listed keys across several requests.
+number of listed keys plus ranges, rejecting a request over that cap with the same error. A server
+may reject, with the same error, a request whose first item alone would make the reply exceed the
+server's response size cap.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
@@ -521,15 +526,14 @@ split its listed keys across several requests.
 3. `ranges`: Array of `[start, end]` Arrays of Blobs: The ranges, ascending. Each bound must
    decode to between 0 and 31 octets; both bounds are inclusive.
 4. `known`: String: The known mode, one of `"none"`, `"keys"` and `"keys_and_values"`.
-5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the range
-   leaves in the proof, in octets.
-   At least one range leaf is included even if it alone exceeds the limit.
+5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the leaves
+   in the proof, in octets. The first item is included even if it alone exceeds the limit.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
-- `"complete"`: Boolean. False if the size limit cut the ranges short.
-- `"proven_through"`: State Key. Present only if `"complete"` is False: the key of the last range
-  leaf included. The proof is the proof of the query cut at this key.
+- `"complete"`: Boolean. False if the size limit cut the query short.
+- `"proven_through"`: State Key. Present only if `"complete"` is False: the key of the last item
+  included. The proof is the proof of the query cut at this key.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
