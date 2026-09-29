@@ -64,7 +64,8 @@ verified against a state root the client already trusts, e.g. one returned by `s
 
 A proof answers a query consisting of listed keys and inclusive key ranges, as defined under
 [Queries](#queries). The path to a trie node is the sequence of bits walked from the root to
-reach it, and the node's depth is the length of that path. A trie node is expanded if a listed
+reach it, the node's depth is the length of that path, and the node's prefix interval is the set
+of 31-octet keys that start with that path. A trie node is expanded if a listed
 key starts with the path to it, or if a key starting with the path to it lies within a listed
 range. The proof subtree consists of the
 expanded nodes and both children of every expanded branch. Each of its nodes appears as one of:
@@ -108,8 +109,9 @@ when nothing is owed. The number of `L` tags fixes the length of the `kinds` sec
 kinds together fix the lengths of the `hashes` and `keys` sections, and the `values` section is
 the remainder.
 
-An `H` contributes the 32-octet identity of the node it stands for; if that node is a left child,
-the most significant bit of its identity (bit 7 of octet 0) is zero, as in its parent's encoding.
+An `H` contributes the 32-octet identity of the node it stands for. If that node is a left child,
+its identity is given as its parent's encoding stores it: with the most significant bit (bit 7 of
+octet 0) cleared, since that bit position holds the parent's discriminator.
 A hash-only leaf contributes the 32-octet hash of its value at the position of its `L` tag.
 
 A full leaf at depth $d$ contributes the last $248 - d$ bits of its key, the first
@@ -163,7 +165,8 @@ A verifier must reject a proof if any of the following holds:
 12. The identity of the root of the proof subtree differs from the trusted state root.
 
 These rules give every proof subtree, with a given kind for each leaf, exactly one encoding. The
-verifier accepts any proof subtree whose root identity is the state root: it checks neither that
+verifier accepts any canonically encoded proof subtree whose root identity is the state root: it
+checks neither that
 the subtree is the smallest the query requires nor the leaf kinds against the query. A proof may
 therefore expand more of the trie than the query needs, which proves more keys, never fewer; the
 subtree and kinds a server produces are defined under [Queries](#queries), and a client may bound
@@ -491,9 +494,10 @@ header hash. The query is as defined in [Queries](#queries), and the proof as de
 [State proofs](#state-proofs).
 
 The server rejects the request with the JSON-RPC invalid params error if the listed keys are not
-strictly ascending, a range bound is longer than 31 bytes, a range's padded `start` exceeds its
+strictly ascending, a range bound is longer than 31 octets, a range's padded `start` exceeds its
 padded `end`, a range's padded `start` does not exceed the previous range's padded `end`, a listed
-key lies within a range, or `known` is not one of the Strings below. Servers may lower
+key lies within a range, `known` is not one of the Strings below, or `size_limit` is not a
+non-negative integer. Servers may lower
 `size_limit` to a cap of their choosing, and may cap the number of listed keys plus ranges,
 rejecting a request over that cap with the same error.
 #### Parameters
