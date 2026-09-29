@@ -163,8 +163,11 @@ A verifier must reject a proof if any of the following holds:
 12. The identity of the root of the proof subtree differs from the trusted state root.
 
 These rules give every proof subtree, with a given kind for each leaf, exactly one encoding. The
-verifier does not check the leaf kinds against the query; which kind a server uses for each leaf
-is defined under [Queries](#queries).
+verifier accepts any proof subtree whose root identity is the state root: it checks neither that
+the subtree is the smallest the query requires nor the leaf kinds against the query. A proof may
+therefore expand more of the trie than the query needs, which proves more keys, never fewer; the
+subtree and kinds a server produces are defined under [Queries](#queries), and a client may bound
+the size of the proofs it accepts.
 
 ### Verification
 
@@ -178,7 +181,8 @@ and the entry popped, which completes the branch in turn:
 
     stack = empty, path = empty
     loop:
-        match next tag:
+        tag = next tag
+        match tag:
             B: push an empty entry; append 0 to path; continue
             H: id = next hash
             E: id = zero hash; path is covered
@@ -188,16 +192,18 @@ and the entry popped, which completes the branch in turn:
             if stack is empty:
                 require id = state root; done
             if top of stack is empty:
-                top of stack = id; set the last bit of path to 1; break
-            left = pop stack; remove the last bit of path
-            id = identity of the branch with children left and id
+                top of stack = (tag, id); set the last bit of path to 1; break
+            (left tag, left) = pop stack; remove the last bit of path
+            check rule 5 on (left tag, tag)
+            id = identity of the branch with children left and id; tag = B
 
-The pseudo-code omits the canonical-form rules, which are checked as each tag, leaf and branch is
-read or completed. To read a leaf, the verifier takes the next kind octet. For a full leaf, the key
-is the path followed by the next $248 - d$ bits of the `keys` section, $d$ being the length of the
-path; otherwise it is the single known key starting with the path (rule 10). The entry is the value
-read from the `values` section as per the value form, the next hash for a hash-only value, or, for a
-fully elided leaf, the known value of the key; for a key-elided leaf, any known value is ignored.
+The pseudo-code omits the other canonical-form rules, which are checked as each tag, leaf and branch
+is read or completed. To read a leaf, the verifier takes the next kind octet. For a full leaf, the
+key is the path followed by the next $248 - d$ bits of the `keys` section, $d$ being the length of
+the path; otherwise it is the single known key starting with the path (rule 10). The entry is the
+value read from the `values` section as per the value form, the next hash for a hash-only value, or,
+for a fully elided leaf, the known value of the key; for a key-elided leaf, any known value is
+ignored.
 
 The result is the set of present keys with their entries, each either a value or a value hash,
 and the set of covered paths. A key is then:
@@ -208,9 +214,9 @@ and the set of covered paths. A key is then:
 - Not covered, otherwise: its path leaves the proof subtree through an `H`.
 
 A client must treat a key which is not covered as a failed proof, never as an absent key. A
-client verifying the proof for a query it made must also check that no listed key and no key
-within a listed range is not covered, i.e. that no `H` lies on the path to a listed key or covers
-a key within a listed range.
+client verifying the proof for a query it made must also check that no `H` lies on the path to
+a listed key and that no `H` stands for a subtree whose prefix interval intersects a listed range;
+what lies beneath an `H` is unknown, so the check is on intervals, not on keys.
 
 ### Queries
 
@@ -236,16 +242,17 @@ the value is at most 32 octets long, and 33 otherwise; this document never produ
 leaves, though a verifier must accept them.
 
 The size limit applies to the leaves whose keys lie within a range, taken in ascending key order
-across all ranges. The size of such a leaf is the number of octets it adds to the `kinds`, `keys`
-and `values` sections: 1, plus $\lceil (248 - d) / 8 \rceil$ if it is a full leaf, plus the length
-of its data in the `values` section. If adding the next leaf's size to the total of the leaves
-already included would exceed the size limit, and at least one leaf has been included, the server
-stops: the reply is truncated, `"complete"` is False and `"proven_through"` is the key of the last
-included leaf; if every such leaf fits, `"complete"` is True. The proof of a truncated reply is the
-proof of the query cut at `"proven_through"`. The query cut at a key $k$ is the query with every
-range whose padded `start` exceeds $k$ removed and every remaining range whose padded `end` exceeds
-$k$ ending at $k$; the listed keys are unchanged. Listed keys are never dropped and do not count
-against the size limit.
+across all ranges. Each such leaf is charged a size of 1, plus $\lceil (248 - d) / 8 \rceil$ if it
+is a full leaf, plus the length of its data in the `values` section. The charge is computed per leaf
+and is deliberately conservative: key suffixes are packed without per-leaf padding, so the charged
+total may exceed the octets the leaves actually add. If adding the next leaf's size to the total of
+the leaves already included would exceed the size limit, and at least one leaf has been included,
+the server stops: the reply is truncated, `"complete"` is False and `"proven_through"` is the key of
+the last included leaf; if every such leaf fits, `"complete"` is True. The proof of a truncated
+reply is the proof of the query cut at `"proven_through"`. The query cut at a key $k$ is the query
+with every range whose padded `start` exceeds $k$ removed and every remaining range whose padded
+`end` exceeds $k$ ending at $k$; the listed keys are unchanged. Listed keys are never dropped and do
+not count against the size limit.
 
 A client receiving a truncated reply must verify it against the query cut at `"proven_through"`,
 and may continue with a query whose ranges start after it. The cut cannot be inferred from the
@@ -496,7 +503,8 @@ rejecting a request over that cap with the same error.
 3. `ranges`: Array of `[start, end]` Arrays of Blobs: The ranges, ascending. Each bound must
    decode to between 0 and 31 bytes; both bounds are inclusive.
 4. `known`: String: The known mode, one of `"none"`, `"keys"` and `"keys_and_values"`.
-5. `size_limit`: Number: Soft limit on the total size of the range leaves in the proof, in octets.
+5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the range
+   leaves in the proof, in octets.
    At least one range leaf is included even if it alone exceeds the limit.
 #### Result
 An Object with the following members:
