@@ -109,15 +109,17 @@ when nothing is owed. The number of `L` tags fixes the length of the `kinds` sec
 kinds together fix the lengths of the `hashes` and `keys` sections, and the `values` section is
 the remainder.
 
-An `H` contributes the 32-octet identity of the node it stands for. If that node is a left child,
-its identity is given as its parent's encoding stores it: with the most significant bit (bit 7 of
-octet 0) cleared, since that bit position holds the parent's discriminator.
-A hash-only leaf contributes the 32-octet hash of its value at the position of its `L` tag.
+The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
+in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
+child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
+7 of octet 0) cleared, since that bit position holds the parent's discriminator. The entry for a
+hash-only leaf (value form 34) is the hash of its value, and takes its place in the sequence at the
+position of the leaf's `L` tag.
 
-A full leaf at depth $d$ contributes the last $248 - d$ bits of its key, the first
-$d$ bits being the path to it. These suffixes are concatenated, most significant bit first,
-without padding between them; the `keys` section is padded with zero bits to an octet boundary at
-its end only. The leaf's key is the path to it followed by its suffix.
+The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
+being the leaf's depth and the first $d$ bits being the path to it. These suffixes are concatenated,
+most significant bit first, without padding between them; the section is padded with zero bits to an
+octet boundary at its end only. The leaf's key is the path to it followed by its suffix.
 
 A kind octet describes one leaf. Bit 7 is set for a fully elided leaf and bit 6 for a key-elided
 leaf; bits 5 to 0 give the value form:
