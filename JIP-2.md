@@ -186,13 +186,18 @@ client may bound the size of the proofs it accepts.
 ### Verification
 
 The verifier takes the proof, a trusted state root and, if any leaf is elided, the client's known
-keys with their values. It reads the tags in order and keeps two things: the path to the node being
-read, and a stack of the branches that are still open, i.e. whose right child has not been read yet.
-When a branch's left child is complete, its identity and tag are stored in the branch's stack entry
-and the right child is read next. When the right child is complete too, the branch's identity is
-computed from the two children and its entry is popped; the branch is then itself a complete child
-of the branch below it, so the same step repeats. The proof is valid when the last branch to close
-is the root and its identity equals the state root:
+keys with their values; while reading the tags in order it keeps the path to the current node and a
+stack of open branches, those whose right child is still to come.
+
+Reading a `B` opens a branch: an entry is pushed and the left child is read next.
+
+When a node completes, its identity and tag either fill the top entry, if that entry is still empty,
+after which the right child is read, or, the entry already holding the left child, combine with it
+into the branch's identity, the entry is popped, and the branch is itself a completed child of the
+branch below.
+
+The proof is valid when the final completed node is the root of the proof subtree and its identity
+equals the state root:
 
     stack = empty, path = empty
     loop:
