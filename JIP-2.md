@@ -260,12 +260,15 @@ other than the leaf's key starts with the path to it. The second condition keeps
 finding two keys for one leaf when an absent listed key shares the path to a present one; it is
 judged against the listed keys of the request, not of the cut query, since a key the cut drops is
 still among the client's known keys.
-Under `keys`, eligible leaves are key-elided; under `keys_and_values`, they are fully elided.
-All other leaves, and all leaves under `none`, are full. A full leaf's value form is the value's
-length if the value is at most 32 octets long, and otherwise 33, except for a leaf whose key is
-neither a listed key nor within a range: such a leaf is in the proof only because a listed key's
-path ends at it or because it borders a range, its value was not asked for, and it uses value form
-34, shipping the value's hash instead.
+
+A leaf's kind follows from its eligibility and the known mode. An eligible leaf is full under
+`none`, key-elided under `keys` and fully elided under `keys_and_values`. A leaf that is not
+eligible is full whatever the mode.
+
+A full leaf's value form is the value's length if the value is at most 32 octets long, and otherwise
+33, with one exception: a leaf whose key is neither a listed key nor within a range is in the proof
+only because a listed key's path ends at it or because it borders a range, so its value was not
+asked for, and it uses value form 34, shipping the value's hash instead.
 
 The listed keys and the ranges form one ascending sequence of items, since the keys are sorted, the
 ranges are sorted and disjoint, and no key lies within a range. The size limit applies to that
