@@ -250,10 +250,13 @@ A query consists of:
   check the declaration.
 
 The proof subtree for a query expands a node if a listed key starts with the path to it, or if a key
-starting with the path to it lies within a listed range. Hence the root is expanded whenever the
-query has a listed key or a range; a listed key that is not in the state has a path ending at an `E`
-or at an `L` holding a different key; the proof for a state with a single key and a non-empty query
-is a single `L`; and the proof for an empty query is a single `H` carrying the state root.
+starting with the path to it lies within a listed range. It follows that:
+
+- the root is expanded whenever the query has a listed key or a range;
+- a listed key that is not in the state has a path ending at an `E`, or at an `L` holding a
+  different key;
+- for a state with a single key, any non-empty query gives a single `L`;
+- an empty query gives a single `H` carrying the state root.
 
 A leaf can be elided only if the client can tell which key it holds: the verifier identifies an
 elided leaf by the one known key that starts with the path to it, as described under
@@ -263,7 +266,7 @@ with the same path when one of them is absent and its path ends at the other's l
 full. The listed keys counted here are those of the request as sent, since a key the cut drops is
 still among the client's known keys.
 
-A leaf's kind follows from its eligibility and the known mode. An eligible leaf is full under
+A leaf's kind follows from its eligibility and the `known` mode. An eligible leaf is full under
 `none`, key-elided under `keys` and fully elided under `keys_and_values`. A leaf that is not
 eligible is full whatever the mode.
 
