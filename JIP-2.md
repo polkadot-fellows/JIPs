@@ -558,14 +558,12 @@ Returns a State Proof for the given query in the posterior state of the block wi
 header hash. The query is as defined in [Queries](#queries), and the proof as defined in
 [State proofs](#state-proofs).
 
-The server rejects the request with the JSON-RPC invalid params error if the listed keys are not
-strictly ascending, a range bound is longer than 31 octets, a range's padded `start` exceeds its
-padded `end`, a range's padded `start` does not exceed the previous range's padded `end`, a listed
-key lies within a range, `known` is not one of the Strings below, or `size_limit` is not a
-non-negative integer. Servers may lower `size_limit` to a cap of their choosing, and may cap the
-number of listed keys plus ranges, rejecting a request over that cap with the same error. A server
-may reject, with the same error, a request whose first charged key alone would make the reply exceed
-the server's response size cap.
+The server rejects the request with the JSON-RPC invalid params error if the query violates the
+constraints under [Queries](#queries), if `known` is not one of the Strings below, or if
+`size_limit` is not a non-negative integer. Servers may clamp `size_limit` to a maximum of their
+choosing and may cap the number of listed keys plus ranges, rejecting a request over that cap with
+the same error. A server may also reject, with the same error, a request whose first charged key
+alone would make the reply exceed the server's response size cap.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
@@ -573,8 +571,9 @@ the server's response size cap.
 3. `ranges`: Array of `[start, end]` Arrays of Blobs: The ranges, ascending. Each bound must
    decode to between 0 and 31 octets; both bounds are inclusive.
 4. `known`: String: The known mode, one of `"none"`, `"keys"` and `"keys_and_values"`.
-5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the leaves
-   in the proof, in octets. The first charged key is included even if it alone exceeds the limit.
+5. `size_limit`: Number: A non-negative integer: soft limit on the total charge of the proof's
+   charged keys, in octets, as defined under [Queries](#queries). The first charged key is included
+   even if it alone exceeds the limit.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
