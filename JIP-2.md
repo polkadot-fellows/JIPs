@@ -58,17 +58,13 @@ For convenience the following common types are defined:
 
 A State Proof proves the values under some state keys, and the absence of other keys, in the state
 of some block. It carries only the parts of the state trie needed for the keys it proves, and is
-verified against a state root the client already trusts, e.g. one returned by `stateRoot`.
+verified against a state root the client already trusts.
 
 ### Proof subtree
 
-The path to a trie node is the sequence of bits walked from the root to reach it, the node's depth
-is the length of that path, and the node's prefix interval is the set of 31-octet keys that start
-with that path.
-
-A proof subtree is a subtree of the state trie in which some nodes are expanded: the root is
-expanded, the parent of an expanded node is expanded, and both children of every expanded branch are
-present. Each node of the proof subtree appears as one of:
+A proof subtree is built from a set of trie nodes, called expanded, that contains the root and, with
+every node, its parent. It consists of those nodes and both children of each expanded branch. Each
+node appears as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
@@ -82,25 +78,31 @@ path reaches an `H`. Two degenerate subtrees exist: a single `E` for an empty st
 
 Which nodes a server expands for a given request is defined under [Queries](#queries).
 
+Throughout, the path to a node is the sequence of bits walked from the root to reach it, and the
+node's depth is the length of that path.
+
 ### Encoding
 
 The decoded data of a State Proof consists of a version octet followed by five sections, with no
 lengths:
 
-    proof   = version tags kinds hashes keys values
-    version = 0x00
-    tags    = subtree, then zero bits up to the next octet boundary
-    subtree = B subtree subtree | H | E | L
-    kinds   = one kind octet per L, in tag order
-    hashes  = 32 octets per H and per hash-only leaf, in tag order
-    keys    = key suffix bits per full leaf, in tag order,
-              then zero bits up to the next octet boundary
-    values  = value data per leaf, as per its kind octet, in tag order
+```
+proof   = version tags kinds hashes keys values
+version = 0x00
+tags    = subtree, then zero bits up to the next octet boundary
+subtree = B subtree subtree | H | E | L
+kinds   = one kind octet per L, in tag order
+hashes  = 32 octets per H and per hash-only leaf, in tag order
+keys    = key suffix bits per full leaf, in tag order,
+          then zero bits up to the next octet boundary
+values  = value data per leaf, as per its kind octet, in tag order
+```
 
-The version octet identifies the encoding defined here, version 0; later revisions of this
-document may define further versions. Tag order is the order of the nodes in the `tags` section,
-i.e. pre-order: a `B` is followed by the tags of its left subtree and then those of its right
-subtree.
+The `version` octet identifies the encoding defined here, version 0; later revisions of this
+document may define further versions.
+
+Tag order is the order of the nodes in the `tags` section, i.e. pre-order: a `B` is followed by the
+tags of its left subtree and then those of its right subtree.
 
 Each tag is two bits: `B` is `00`, `H` is `01`, `E` is `10` and `L` is `11`. Tags are packed from
 the most significant bits of each octet down, so the first tag occupies bits 7 and 6 of the first
@@ -110,19 +112,9 @@ when nothing is owed. The number of `L` tags fixes the length of the `kinds` sec
 kinds together fix the lengths of the `hashes` and `keys` sections, and the `values` section is
 the remainder.
 
-The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
-in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
-child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
-7 of octet 0) cleared. The entry for a hash-only leaf (value form 34) is the hash of its value, and
-takes its place in the sequence at the position of the leaf's `L` tag.
-
-The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
-being the leaf's depth and the first $d$ bits being the path to it. These suffixes are concatenated,
-most significant bit first, without padding between them; the section is padded with zero bits to an
-octet boundary at its end only. The leaf's key is the path to it followed by its suffix.
-
-A kind octet describes one leaf. Bit 7 is set for a fully elided leaf and bit 6 for a key-elided
-leaf; bits 5 to 0 give the value form:
+The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
+describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
+to 0 give the value form:
 
 | Value form | Meaning | Data in the `values` section |
 |---|---|---|
@@ -141,6 +133,20 @@ leaf; bits 5 to 0 give the value form:
 `len` is encoded as per the GP's variable-length serialization of natural numbers, and must be
 greater than 32 and less than $2^{32}$. A hash-only leaf is encoded as per the GP as a leaf whose
 value is longer than 32 octets, with the given hash in place of the value's hash.
+
+The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
+in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
+child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
+7 of octet 0) cleared. The entry for a hash-only leaf (value form 34) is the hash of its value, and
+takes its place in the sequence at the position of the leaf's `L` tag.
+
+The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
+being the leaf's depth and the first $d$ bits being the path to it. These suffixes are concatenated,
+most significant bit first, without padding between them; the section is padded with zero bits to an
+octet boundary at its end only. The leaf's key is the path to it followed by its suffix.
+
+The `values` section holds, for each leaf in tag order, the data its value form announces, and
+nothing else.
 
 ### Canonical form
 
@@ -220,8 +226,9 @@ and the set of covered paths. A key is then:
 
 A client must treat a key which is not covered as a failed proof, never as an absent key. A
 client verifying the proof for a query it made must also check that no `H` lies on the path to
-a listed key and that no `H` stands for a subtree whose prefix interval intersects a listed range;
-what lies beneath an `H` is unknown, so the check is on intervals, not on keys.
+a listed key and that no `H` stands for a node whose path is a prefix of some key within a listed
+range, whether or not the state holds such a key; what lies beneath an `H` is unknown, so the check
+is on paths, not on the keys present.
 
 ### Queries
 
