@@ -228,11 +228,10 @@ and the set of covered paths. A key is then:
   subtree ends at an `E` or at an `L` holding a different key.
 - Not covered, otherwise: its path leaves the proof subtree through an `H`.
 
-A client must treat a key which is not covered as a failed proof, never as an absent key. A
-client verifying the proof for a query it made must also check that no `H` lies on the path to
-a listed key and that no `H` stands for a node whose path is a prefix of some key within a listed
-range, whether or not the state holds such a key; what lies beneath an `H` is unknown, so the check
-is on paths, not on the keys present.
+A client must treat a key which is not covered as a failed proof, never as an absent key. A client
+verifying the proof for a query it made must also check that no `H` lies on the path to a listed
+key, and that no `H` stands for a node whose path is a prefix of some key within a listed range:
+such an `H` could hide keys of the range, so the range would not be proven complete.
 
 ### Queries
 
