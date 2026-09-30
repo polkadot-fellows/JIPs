@@ -112,7 +112,7 @@ one subtree owed, each tag pays for one and each `B` owes two more, and the subt
 when nothing is owed.
 
 The number of `L` tags is the length of the `kinds` section. The `hashes` section is 32 octets for
-each `H` tag and each kind octet of value form _Hash-only value_ (34). The `keys` section is, for
+each `H` tag and each kind octet of the hash-only form. The `keys` section is, for
 each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding
 `L`, rounded up to whole octets once at the end. The `values` section is the remainder.
 
@@ -120,18 +120,18 @@ The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. 
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
 to 0 give the value form:
 
-| Value form | Meaning | Data in the `values` section |
+| Value form | Bits 5 to 0 | Data in the `values` section |
 |---|---|---|
-| 0 to 32 | Embedded value of that many octets | The value |
-| 33 | Long value | `len`, then the value; `len` is the value's length |
-| 34 | Hash-only value | None; the value's hash is in the `hashes` section |
-| 35 to 63 | Invalid | |
+| embedded | 0 to 32, the value's length | The value |
+| long | 33 | `len`, then the value; `len` is the value's length |
+| hash-only | 34 | None; the value's hash is in the `hashes` section |
+| invalid | 35 to 63 | |
 
 | Bit 7 | Bit 6 | Kind | Key | Value |
 |---|---|---|---|---|
 | 0 | 0 | Full | Suffix in the `keys` section | As per the value form |
 | 0 | 1 | Key-elided | Supplied by the client | As per the value form |
-| 1 | 0 | Fully elided | Supplied by the client | Supplied by the client; value form 0 |
+| 1 | 0 | Fully elided | Supplied by the client | Supplied by the client; embedded form, 0 |
 | 1 | 1 | Invalid | | |
 
 `len` is encoded as per the GP's variable-length serialization of natural numbers, and must be
@@ -141,7 +141,7 @@ value is longer than 32 octets, with the given hash in place of the value's hash
 The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
 in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
 child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
-7 of octet 0) cleared. The entry for a hash-only leaf (value form 34) is the hash of its value, and
+7 of octet 0) cleared. The entry for a leaf of the hash-only form is the hash of its value, and
 takes its place in the sequence at the position of the leaf's `L` tag.
 
 The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
@@ -165,8 +165,8 @@ A verifier must reject a proof if any of the following holds:
    empty child beside an unexpanded sibling.
 6. An `H` carries the zero hash, or an `H` which is a left child has the most significant bit of
    its identity set.
-7. A kind octet has a value form of 35 or more, has both bits 7 and 6 set, or has bit 7 set and a
-   non-zero value form.
+7. A kind octet has an invalid value form (35 or more), has both bits 7 and 6 set, or has bit 7 set
+   and a non-zero value form.
 8. A long value's `len` is 32 or less, is $2^{32}$ or more, or is not the octets the GP's
    encoding gives for that number (e.g. `80 28` in place of `28` for 40).
 9. A padding bit of the `keys` section is set.
@@ -259,23 +259,21 @@ starting with the path to it lies within a listed range. It follows that:
 - an empty query gives a single `H` carrying the state root.
 
 A leaf is eligible for elision if its key is a listed key or lies within a range, and no other
-listed key starts with the path to it.
-
-The second condition is there because the verifier identifies an elided leaf by the one known key
-that starts with the path to it, as described under [Verification](#verification). That
-identification fails in one situation: a listed key that is absent from the state, whose walk ends
-at the leaf of another listed key. Both keys then start with that leaf's path, so that leaf is not
-eligible and stays full. The listed keys meant here are those of the request as sent; a key the cut
-drops is still among the client's known keys.
+listed key starts with the path to it.  The second condition is there because the verifier
+identifies an elided leaf by the one known key that starts with the path to it, as described under
+[Verification](#verification). That identification fails in one situation: a listed key that is
+absent from the state, whose walk ends at the leaf of another listed key. Both keys then start with
+that leaf's path, so that leaf is not eligible and stays full. The listed keys meant here are those
+of the request as sent; a key the cut drops is still among the client's known keys.
 
 A leaf's kind follows from its eligibility and the `known` mode. An eligible leaf is full under
 `none`, key-elided under `keys` and fully elided under `keys_and_values`. A leaf that is not
 eligible is full whatever the mode.
 
-A full leaf's value form is the value's length if the value is at most 32 octets long, and otherwise
-33, with one exception: a leaf whose key is neither a listed key nor within a range is in the proof
-only because a listed key's path ends at it or because it borders a range, so its value was not
-asked for, and it uses value form 34, shipping the value's hash instead.
+A full leaf's value form is embedded if the value is at most 32 octets long, and otherwise long,
+with one exception: a leaf whose key is neither a listed key nor within a range is in the proof only
+because a listed key's path ends at it or because it borders a range, so its value was not asked
+for, and it uses the hash-only form, shipping the value's hash instead.
 
 The listed keys and the ranges form one ascending sequence of items, since the keys are sorted, the
 ranges are sorted and disjoint, and no key lies within a range. The size limit applies to that
