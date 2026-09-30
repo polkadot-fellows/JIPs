@@ -62,9 +62,9 @@ verified against a state root the client already trusts.
 
 ### Proof subtree
 
-A proof subtree is built from a set of trie nodes, called expanded, that contains the root and, with
-every node, its parent. It consists of those nodes and both children of each expanded branch. Each
-node appears as one of:
+A proof subtree is built from a set of trie nodes, called expanded nodes, that contains the root
+and, for every node, also contains its parent. It consists of those nodes and both children of each
+expanded branch. Each node is represented as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
@@ -101,8 +101,9 @@ values  = value data per leaf, as per its kind octet, in tag order
 The `version` octet identifies the encoding defined here, version 0; later revisions of this
 document may define further versions.
 
-Tag order is the order of the nodes in the `tags` section, i.e. pre-order: a `B` is followed by the
-tags of its left subtree and then those of its right subtree.
+The `tags` section lists the nodes of the proof subtree in pre-order: a `B` is followed by the tags
+of its left subtree and then those of its right subtree. This order is called tag order, and the
+other sections follow it.
 
 Each tag is two bits: `B` is `00`, `H` is `01`, `E` is `10` and `L` is `11`. Tags are packed from
 the most significant bits of each octet down, so the first tag occupies bits 7 and 6 of the first
