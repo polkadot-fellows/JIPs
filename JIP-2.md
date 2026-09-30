@@ -190,11 +190,12 @@ keys with their values; while reading the tags in order it keeps the path to the
 stack of open branches, those whose right child is still to come.
 
 Reading a `B` opens a branch: an entry is pushed and the left child is read next. When a node
-completes, its identity and tag either fill the top entry, if that entry is still empty, after which
-the right child is read, or, the entry already holding the left child, combine with it into the
-branch's identity, the entry is popped, and the branch is itself a completed child of the branch
-below. The proof is valid when the final completed node is the root of the proof subtree and its
-identity equals the state root:
+completes and the top entry is still empty, the node is the left child: its identity and tag are
+stored in the entry, and the right child is read next. When a node completes and the top entry
+already holds a left child, the node is the right child: the branch's identity is computed from the
+two, the entry is popped, and the branch is itself a completed node, to be handled the same way by
+the entry below. The proof is valid when the final completed node is the root of the proof subtree
+and its identity equals the state root:
 
     stack = empty, path = empty
     loop:
