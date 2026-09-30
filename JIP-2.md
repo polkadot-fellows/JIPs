@@ -63,18 +63,18 @@ verified against a state root the client already trusts.
 ### Proof subtree
 
 A proof subtree is built from a set of trie nodes, called expanded nodes, that contains the root
-and, for every node, also contains its parent. It consists of those nodes and both children of each
-expanded branch. Each node is represented as one of:
+and, for every other node, its parent. It consists of those nodes and both children of each expanded
+branch. Each node is represented as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
 - `E`: an empty subtree, expanded or not.
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
-A proof subtree proves the key and value of every `L` it contains, and the absence of every key
-whose path ends at an `E` or at an `L` holding a different key. It proves nothing about a key whose
-path reaches an `H`. Two degenerate subtrees exist: a single `E` for an empty state, and a single
-`H` carrying the state root when nothing is expanded.
+A proof subtree proves the key and entry, a value or a value hash, of every `L` it contains, and the
+absence of every key whose path ends at an `E` or at an `L` holding a different key. It proves
+nothing about a key whose path reaches an `H`. Two degenerate subtrees exist: a single `E` for an
+empty state, and a single `H` carrying the state root when nothing is expanded.
 
 Which nodes a server expands for a given request is defined under [Queries](#queries).
 
@@ -282,8 +282,8 @@ order.
 
 Each item is charged the size of the leaf the proof contains for it: a listed key is charged for the
 leaf its path ends at, which holds either that key or, if the key is absent, another key, and
-nothing if its path ends at an empty subtree; a range is charged for each leaf within it. A leaf's
-charged size is:
+nothing if its path ends at an empty subtree; a range is charged for each leaf within it, and a
+range containing no key of the state contributes no item. A leaf's charged size is:
 
 - 1, for its kind octet;
 - $\lceil (248 - d) / 8 \rceil$ if its key suffix is shipped;
@@ -300,8 +300,8 @@ a range. If every item fits, `"complete"` is True.
 The query cut at a key $k$ is a shorter query derived from the request: it keeps the listed keys
 that do not exceed $k$, removes every range whose padded `start` exceeds $k$, and ends every
 remaining range whose padded `end` exceeds $k$ at $k$. A truncated reply is not a special form of
-proof: it carries exactly the proof that a request for the query cut at `"proven_through"` would
-have produced, and the client verifies it as such.
+proof: it carries the proof subtree of the query cut at `"proven_through"`, with elision decided
+against the request as sent, and the client verifies it as such.
 
 A client receiving a truncated reply must verify it against the query cut at `"proven_through"`, and
 may continue with the remaining listed keys and the ranges cut to start after it. The cut cannot be
