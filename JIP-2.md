@@ -109,9 +109,12 @@ Each tag is two bits: `B` is `00`, `H` is `01`, `E` is `10` and `L` is `11`. Tag
 the most significant bits of each octet down, so the first tag occupies bits 7 and 6 of the first
 octet of the `tags` section. The `tags` section ends when the subtree is complete: starting with
 one subtree owed, each tag pays for one and each `B` owes two more, and the subtree is complete
-when nothing is owed. The number of `L` tags fixes the length of the `kinds` section, the tags and
-kinds together fix the lengths of the `hashes` and `keys` sections, and the `values` section is
-the remainder.
+when nothing is owed.
+
+The number of `L` tags is the length of the `kinds` section. The `hashes` section is 32 octets for
+each `H` tag and each kind octet of value form 34. The `keys` section is, for each kind octet whose
+leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding `L`, rounded up to
+whole octets once at the end. The `values` section is the remainder.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
