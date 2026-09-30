@@ -112,9 +112,9 @@ one subtree owed, each tag pays for one and each `B` owes two more, and the subt
 when nothing is owed.
 
 The number of `L` tags is the length of the `kinds` section. The `hashes` section is 32 octets for
-each `H` tag and each kind octet of value form 34. The `keys` section is, for each kind octet whose
-leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding `L`, rounded up to
-whole octets once at the end. The `values` section is the remainder.
+each `H` tag and each kind octet of value form _Hash-only value_ (34). The `keys` section is, for
+each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding
+`L`, rounded up to whole octets once at the end. The `values` section is the remainder.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
