@@ -72,8 +72,11 @@ branch. Each node is represented as one of:
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
 A proof subtree proves:
-- for every `L` it contains,the leaf's key and entry, where the entry is either a value or a value hash;
-- the absence of every key whose path ends at an `E` or at an `L` holding a different key. 
+
+- for every `L` it contains, the leaf's key and entry, where the entry is either a value or a value
+  hash;
+- the absence of every key whose path ends at an `E` or at an `L` holding a different key.
+
 It proves nothing about a key whose path reaches an `H`. Two degenerate subtrees exist: a single `E`
 for an empty state, and a single `H` carrying the state root when nothing is expanded.
 
@@ -112,10 +115,10 @@ octet of the `tags` section. The `tags` section ends when the subtree is complet
 subtree open; every tag closes one, and every `B` opens two more; the section ends when none is
 open.
 
-The `kinds` section contains one octet per L tag.  The `hashes` section contains 32 octets for each
-`H` tag and each kind octet of the hash-only form. The `keys` section contains, for each kind octet
-whose leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding `L`, rounded up
-to whole octets once at the end. The `values` section consumes all remaining octets.
+The `hashes` section contains 32 octets for each `H` tag and each kind octet of the hash-only form.
+The `keys` section contains, for each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being
+the depth of the corresponding `L`, rounded up to whole octets once at the end. The `values` section
+consumes all remaining octets.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
@@ -189,9 +192,9 @@ A client may bound the size of the proofs it accepts.
 
 ### Verification
 
-The verifier takes the proof, a trusted state root.If any leaf is elided, it also takes the client's known
-keys with their values. While reading the tags in order it keeps the path to the current node and a
-stack of open branches, those whose right child is still to come.
+The verifier takes the proof and a trusted state root. If any leaf is elided, it also takes the
+client's known keys with their values. While reading the tags in order it keeps the path to the
+current node and a stack of open branches, those whose right child is still to come.
 
 Reading a `B` opens a branch: an entry is pushed and the left child is read next. When a node
 completes and the top entry is still empty, the node is the left child: its identity and tag are
@@ -288,16 +291,14 @@ There is one exception. A leaf whose key is neither a listed key nor within a ra
 only because a listed key's path ends at it or because it borders a range, so its value was not
 asked for; such a leaf uses the hash-only form and ships the value's hash instead.
 
-The listed keys and the ranges form one ascending sequence of items, since the keys are sorted, the
-ranges are sorted and disjoint, and no key lies within a range. The size limit applies to that
-sequence as a whole: the server considers listed keys and range leaves together, in ascending key
-order.
+The charged keys of a query are its listed keys and the keys of the state that lie within its
+ranges. Since the listed keys are sorted, the ranges are sorted and disjoint, and no listed key lies
+within a range, the charged keys form one ascending sequence. A range containing no key of the state
+adds no charged keys. The size limit applies to this sequence.
 
-Each item is charged the size of the leaf the proof contains for it.  A listed key is charged for
-the leaf at which its lookup terminates. That leaf may hold the listed key itself or, for an absent
-key, a different key. A listed key whose path ends at an empty subtree is charged nothing. A range
-is charged for each leaf within it; a range containing no key of the state contributes no item. A
-leaf's charged size is:
+The charge for a charged key is the size of the leaf at which its lookup ends. For an absent listed
+key, that leaf holds a different key; a listed key whose lookup ends at an empty subtree is charged
+nothing. A leaf's charged size is:
 
 - 1, for its kind octet;
 - $\lceil (248 - d) / 8 \rceil$ if its key suffix is shipped;
@@ -306,10 +307,10 @@ leaf's charged size is:
 The charge is computed per leaf and is deliberately conservative: key suffixes are packed without
 per-leaf padding, so the charged total may exceed the octets the leaves actually add.
 
-The server includes items in order while their charged total stays within the limit; the first item
-is always included. If an item does not fit, the server stops there: `"complete"` is False and
-`"proven_through"` is the key of the last included item, whether it is a listed key or a key within
-a range. If every item fits, `"complete"` is True.
+The server includes charged keys in order while their total charge stays within the limit; the first
+charged key is always included. If a charged key does not fit, the server stops there: `"complete"`
+is False and `"proven_through"` is the last charged key included. If every charged key fits,
+`"complete"` is True.
 
 The query cut at a key $k$ is a shorter query derived from the request: it keeps the listed keys
 that do not exceed $k$, removes every range whose padded `start` exceeds $k$, and ends every
@@ -562,8 +563,8 @@ padded `end`, a range's padded `start` does not exceed the previous range's padd
 key lies within a range, `known` is not one of the Strings below, or `size_limit` is not a
 non-negative integer. Servers may lower `size_limit` to a cap of their choosing, and may cap the
 number of listed keys plus ranges, rejecting a request over that cap with the same error. A server
-may reject, with the same error, a request whose first item alone would make the reply exceed the
-server's response size cap.
+may reject, with the same error, a request whose first charged key alone would make the reply exceed
+the server's response size cap.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
@@ -572,12 +573,12 @@ server's response size cap.
    decode to between 0 and 31 octets; both bounds are inclusive.
 4. `known`: String: The known mode, one of `"none"`, `"keys"` and `"keys_and_values"`.
 5. `size_limit`: Number: A non-negative integer: soft limit on the total charged size of the leaves
-   in the proof, in octets. The first item is included even if it alone exceeds the limit.
+   in the proof, in octets. The first charged key is included even if it alone exceeds the limit.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
 - `"complete"`: Boolean. False if the size limit cut the query short.
-- `"proven_through"`: State Key. Present only if `"complete"` is False: the key of the last item
+- `"proven_through"`: State Key. Present only if `"complete"` is False: the last charged key
   included. The proof is the proof of the query cut at this key.
 
 ### `beefyRoot(header_hash)`
