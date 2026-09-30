@@ -107,9 +107,9 @@ other sections follow it.
 
 Each tag is two bits: `B` is `00`, `H` is `01`, `E` is `10` and `L` is `11`. Tags are packed from
 the most significant bits of each octet down, so the first tag occupies bits 7 and 6 of the first
-octet of the `tags` section. The `tags` section ends when the subtree is complete: starting with
-one subtree owed, each tag pays for one and each `B` owes two more, and the subtree is complete
-when nothing is owed.
+octet of the `tags` section. The `tags` section ends when the subtree is complete: start with one
+subtree open; every tag closes one, and every `B` opens two more; the section ends when none is
+open.
 
 The number of `L` tags is the length of the `kinds` section. The `hashes` section is 32 octets for
 each `H` tag and each kind octet of the hash-only form. The `keys` section is, for
@@ -189,15 +189,12 @@ The verifier takes the proof, a trusted state root and, if any leaf is elided, t
 keys with their values; while reading the tags in order it keeps the path to the current node and a
 stack of open branches, those whose right child is still to come.
 
-Reading a `B` opens a branch: an entry is pushed and the left child is read next.
-
-When a node completes, its identity and tag either fill the top entry, if that entry is still empty,
-after which the right child is read, or, the entry already holding the left child, combine with it
-into the branch's identity, the entry is popped, and the branch is itself a completed child of the
-branch below.
-
-The proof is valid when the final completed node is the root of the proof subtree and its identity
-equals the state root:
+Reading a `B` opens a branch: an entry is pushed and the left child is read next. When a node
+completes, its identity and tag either fill the top entry, if that entry is still empty, after which
+the right child is read, or, the entry already holding the left child, combine with it into the
+branch's identity, the entry is popped, and the branch is itself a completed child of the branch
+below. The proof is valid when the final completed node is the root of the proof subtree and its
+identity equals the state root:
 
     stack = empty, path = empty
     loop:
