@@ -145,9 +145,9 @@ this form is defined under [Queries](#queries).
 
 The `hashes` section is a sequence of 32-octet entries, one per `H` tag and one per hash-only leaf,
 in tag order. The entry for an `H` is the identity of the node it stands for. If that node is a left
-child, its identity is given as its parent's encoding stores it: with the most significant bit (bit
-7 of octet 0) cleared. The entry for a leaf of the hash-only form is the hash of its value, and
-takes its place in the sequence at the position of the leaf's `L` tag.
+child, its identity is encoded as in its parent: with the most significant bit (bit 7 of octet 0)
+cleared. The entry for a leaf of the hash-only form is the hash of its value, and takes its place in
+the sequence at the position of the leaf's `L` tag.
 
 The `keys` section holds, for each full leaf in tag order, the last $248 - d$ bits of its key, $d$
 being the leaf's depth and the first $d$ bits being the path to it. These suffixes are concatenated,
@@ -242,10 +242,10 @@ and the set of covered paths. A key is then:
 - Not covered, otherwise: its path leaves the proof subtree through an `H`.
 
 A client must treat a key that is not covered as a failed proof, never as an absent key. For a
-listed key this is the outcome of looking it up. For a range the client cannot look up keys it does
-not know, so it must instead check that no `H` stands for a node whose path is a prefix of some key
-within the range: such an `H` could hide keys of the range, which would then be neither present nor
-absent in the result.
+listed key this is the outcome of looking it up. For a range, the client cannot individually look up
+keys it does not know. It must therefore check that no `H` stands for a node whose path is a prefix
+of a key within the range. Such an `H` could hide keys of the range, which would then be neither
+present nor absent in the result.
 
 ### Queries
 
@@ -288,8 +288,9 @@ eligible is full whatever the mode.
 A full leaf's value form is embedded if the value is at most 32 octets long, and otherwise long.
 
 There is one exception. A leaf whose key is neither a listed key nor within a range is in the proof
-only because a listed key's path ends at it or because it borders a range, so its value was not
-asked for; such a leaf uses the hash-only form and ships the value's hash instead.
+only because a listed key's path ends at it, or because a key within a range starts with the path to
+it while its own key lies outside every range; its value was not asked for, so such a leaf uses the
+hash-only form and ships the value's hash instead.
 
 The charged keys of a query are its listed keys and the keys of the state that lie within its
 ranges. Since the listed keys are sorted, the ranges are sorted and disjoint, and no listed key lies
