@@ -56,30 +56,31 @@ For convenience the following common types are defined:
 
 ## State proofs
 
-A State Proof proves the values under some state keys, and the absence of other keys, in the
-state of some block. It carries only the parts of the state trie that the query needs, and is
+A State Proof proves the values under some state keys, and the absence of other keys, in the state
+of some block. It carries only the parts of the state trie needed for the keys it proves, and is
 verified against a state root the client already trusts, e.g. one returned by `stateRoot`.
 
 ### Proof subtree
 
-A proof answers a query consisting of listed keys and inclusive key ranges, as defined under
-[Queries](#queries). The path to a trie node is the sequence of bits walked from the root to
-reach it, the node's depth is the length of that path, and the node's prefix interval is the set
-of 31-octet keys that start with that path. A trie node is expanded if a listed
-key starts with the path to it, or if a key starting with the path to it lies within a listed
-range. The proof subtree consists of the
-expanded nodes and both children of every expanded branch. Each of its nodes appears as one of:
+The path to a trie node is the sequence of bits walked from the root to reach it, the node's depth
+is the length of that path, and the node's prefix interval is the set of 31-octet keys that start
+with that path.
+
+A proof subtree is a subtree of the state trie in which some nodes are expanded: the root is
+expanded, the parent of an expanded node is expanded, and both children of every expanded branch are
+present. Each node of the proof subtree appears as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
 - `E`: an empty subtree, expanded or not.
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
-The root is expanded if the query has at least one listed key or range. The proof for an empty
-state is a single `E`, whatever the query. Otherwise, the proof for an empty query is a single
-`H` carrying the state root, and the proof for any other query on a state with a single key is a
-single `L`. A listed key that is not in the state has a path in the proof subtree that ends either
-at an `E`, or at an `L` holding a different key.
+A proof subtree proves the key and value of every `L` it contains, and the absence of every key
+whose path ends at an `E` or at an `L` holding a different key. It proves nothing about a key whose
+path reaches an `H`. Two degenerate subtrees exist: a single `E` for an empty state, and a single
+`H` carrying the state root when nothing is expanded.
+
+Which nodes a server expands for a given request is defined under [Queries](#queries).
 
 ### Encoding
 
@@ -236,6 +237,12 @@ A query consists of:
   already holds every listed key that is in the state and every key of the state within a range;
   `keys_and_values` declares that it holds these keys with their values. The server does not
   check the declaration.
+
+The proof subtree for a query expands a node if a listed key starts with the path to it, or if a key
+starting with the path to it lies within a listed range. Hence the root is expanded whenever the
+query has a listed key or a range; a listed key that is not in the state has a path ending at an `E`
+or at an `L` holding a different key; the proof for a state with a single key and a non-empty query
+is a single `L`; and the proof for an empty query is a single `H` carrying the state root.
 
 A leaf is eligible for elision if its key is a listed key or lies within a range, and no listed key
 other than the leaf's key starts with the path to it. The second condition keeps rule 10 from
