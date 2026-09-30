@@ -115,10 +115,10 @@ octet of the `tags` section. The `tags` section ends when the subtree is complet
 subtree open; every tag closes one, and every `B` opens two more; the section ends when none is
 open.
 
-The `hashes` section contains 32 octets for each `H` tag and each kind octet of the hash-only form.
-The `keys` section contains, for each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being
-the depth of the corresponding `L`, rounded up to whole octets once at the end. The `values` section
-consumes all remaining octets.
+The `hashes` section contains 32 octets for each `H` tag and for each hash-only leaf. The `keys`
+section contains, for each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being the depth
+of the corresponding `L`, rounded up to whole octets once at the end. The `values` section consumes
+all remaining octets.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
@@ -297,7 +297,7 @@ within a range, the charged keys form one ascending sequence. A range containing
 adds no charged keys. The size limit applies to this sequence.
 
 The charge for a charged key is the size of the leaf at which its lookup ends. For an absent listed
-key, that leaf holds a different key; a listed key whose lookup ends at an empty subtree is charged
+key, that leaf holds a different key. A listed key whose lookup ends at an empty subtree is charged
 nothing. A leaf's charged size is:
 
 - 1, for its kind octet;
