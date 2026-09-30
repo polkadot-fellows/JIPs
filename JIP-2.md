@@ -56,9 +56,9 @@ For convenience the following common types are defined:
 
 ## State proofs
 
-A State Proof proves the values under some state keys, and the absence of other keys, in the state
-of some block. It carries only the parts of the state trie needed for the keys it proves, and is
-verified against a state root the client already trusts.
+A State Proof proves the values of some state keys, and the absence of other keys, in the state of a
+block. It carries only the parts of the state trie needed for the keys it proves, and is verified
+against a state root the client already trusts.
 
 ### Proof subtree
 
@@ -71,10 +71,11 @@ branch. Each node is represented as one of:
 - `E`: an empty subtree, expanded or not.
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
-A proof subtree proves the key and entry, a value or a value hash, of every `L` it contains, and the
-absence of every key whose path ends at an `E` or at an `L` holding a different key. It proves
-nothing about a key whose path reaches an `H`. Two degenerate subtrees exist: a single `E` for an
-empty state, and a single `H` carrying the state root when nothing is expanded.
+A proof subtree proves:
+- for every `L` it contains,the leaf's key and entry, where the entry is either a value or a value hash;
+- the absence of every key whose path ends at an `E` or at an `L` holding a different key. 
+It proves nothing about a key whose path reaches an `H`. Two degenerate subtrees exist: a single `E`
+for an empty state, and a single `H` carrying the state root when nothing is expanded.
 
 Which nodes a server expands for a given request is defined under [Queries](#queries).
 
@@ -111,10 +112,10 @@ octet of the `tags` section. The `tags` section ends when the subtree is complet
 subtree open; every tag closes one, and every `B` opens two more; the section ends when none is
 open.
 
-The number of `L` tags is the length of the `kinds` section. The `hashes` section contains 32 octets
-for each `H` tag and each kind octet of the hash-only form. The `keys` section contains, for each
-kind octet whose leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding `L`,
-rounded up to whole octets once at the end. The `values` section is the remainder.
+The `kinds` section contains one octet per L tag.  The `hashes` section contains 32 octets for each
+`H` tag and each kind octet of the hash-only form. The `keys` section contains, for each kind octet
+whose leaf ships its key, $248 - d$ bits, $d$ being the depth of the corresponding `L`, rounded up
+to whole octets once at the end. The `values` section consumes all remaining octets.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
@@ -188,8 +189,8 @@ A client may bound the size of the proofs it accepts.
 
 ### Verification
 
-The verifier takes the proof, a trusted state root and, if any leaf is elided, the client's known
-keys with their values; while reading the tags in order it keeps the path to the current node and a
+The verifier takes the proof, a trusted state root.If any leaf is elided, it also takes the client's known
+keys with their values. While reading the tags in order it keeps the path to the current node and a
 stack of open branches, those whose right child is still to come.
 
 Reading a `B` opens a branch: an entry is pushed and the left child is read next. When a node
@@ -270,12 +271,12 @@ starting with the path to it lies within a listed range. It follows that:
 - an empty query gives a single `H` carrying the state root.
 
 A leaf is eligible for elision if its key is a listed key or lies within a range, and no other
-listed key starts with the path to it. The second condition is there because the verifier
-identifies an elided leaf by the one known key that starts with the path to it, as described under
-[Verification](#verification). That identification fails in one situation: a listed key that is
-absent from the state, whose walk ends at the leaf of another listed key. Both keys then start with
-that leaf's path, so that leaf is not eligible and stays full. The listed keys meant here are those
-of the request as sent; a key the cut drops is still among the client's known keys.
+listed key starts with the path to it. The second condition is there because the verifier identifies
+an elided leaf by the one known key that starts with the path to it, as described under
+[Verification](#verification). That identification is ambiguous in one situation: a listed key that
+is absent from the state, whose walk ends at the leaf of another listed key. Both keys then start
+with that leaf's path, so that leaf is not eligible and stays full. The listed keys meant here are
+those of the request as sent; a key the cut drops is still among the client's known keys.
 
 A leaf's kind follows from its eligibility and the `known` mode. An eligible leaf is full under
 `none`, key-elided under `keys` and fully elided under `keys_and_values`. A leaf that is not
@@ -292,10 +293,11 @@ ranges are sorted and disjoint, and no key lies within a range. The size limit a
 sequence as a whole: the server considers listed keys and range leaves together, in ascending key
 order.
 
-Each item is charged the size of the leaf the proof contains for it. A listed key is charged for the
-leaf its path ends at, which holds either that key or, if the key is absent, another key. A listed
-key whose path ends at an empty subtree is charged nothing. A range is charged for each leaf within
-it; a range containing no key of the state contributes no item. A leaf's charged size is:
+Each item is charged the size of the leaf the proof contains for it.  A listed key is charged for
+the leaf at which its lookup terminates. That leaf may hold the listed key itself or, for an absent
+key, a different key. A listed key whose path ends at an empty subtree is charged nothing. A range
+is charged for each leaf within it; a range containing no key of the state contributes no item. A
+leaf's charged size is:
 
 - 1, for its kind octet;
 - $\lceil (248 - d) / 8 \rceil$ if its key suffix is shipped;
