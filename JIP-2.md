@@ -258,13 +258,15 @@ starting with the path to it lies within a listed range. It follows that:
 - for a state with a single key, any non-empty query gives a single `L`;
 - an empty query gives a single `H` carrying the state root.
 
-A leaf can be elided only if the client can tell which key it holds: the verifier identifies an
-elided leaf by the one known key that starts with the path to it, as described under
-[Verification](#verification). A leaf is therefore eligible for elision if its key is a listed key
-or lies within a range, and no other listed key starts with the path to it. Two listed keys start
-with the same path when one of them is absent and its path ends at the other's leaf; that leaf stays
-full. The listed keys counted here are those of the request as sent, since a key the cut drops is
-still among the client's known keys.
+A leaf is eligible for elision if its key is a listed key or lies within a range, and no other
+listed key starts with the path to it.
+
+The second condition is there because the verifier identifies an elided leaf by the one known key
+that starts with the path to it, as described under [Verification](#verification). That
+identification fails in one situation: a listed key that is absent from the state, whose walk ends
+at the leaf of another listed key. Both keys then start with that leaf's path, so that leaf is not
+eligible and stays full. The listed keys meant here are those of the request as sent; a key the cut
+drops is still among the client's known keys.
 
 A leaf's kind follows from its eligibility and the `known` mode. An eligible leaf is full under
 `none`, key-elided under `keys` and fully elided under `keys_and_values`. A leaf that is not
