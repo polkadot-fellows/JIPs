@@ -11,14 +11,14 @@ node hand over the values together with enough of the state trie for the client 
 state root and compare. Any tampering with a value, or any omission of a key the client asked about,
 changes the recomputed root.
 
-The first JIP-2 draft reused the range proof of the CE 129 state-request protocol for this. That
-proof was designed for state synchronisation, where a reply carries thousands of consecutive
-key-value pairs and the trie nodes are a small appendix. For a client asking for a handful of
-unrelated keys it fits badly. It ships every branch node on the path as a whole 64-octet node,
-although the verifier recomputes one of the two child identities in each node anyway, so about half
-of the proof is redundant. It answers one contiguous key range per request, so unrelated keys need
-one request each, each repeating the top of the trie. And it is verified by rebuilding a partial
-trie, which is more machinery than a verifier running inside a PolkaVM service should need.
+A proof made of whole trie nodes, such as the range proof of the CE 129 state-request protocol,
+suits state synchronisation, where a reply carries thousands of consecutive key-value pairs and the
+trie nodes are a small appendix. For a client asking for a handful of unrelated keys it fits badly.
+It ships every branch node on the path as a whole 64-octet node, although the verifier recomputes
+one of the two child identities in each node anyway, so about half of the proof is redundant. It
+answers one contiguous key range per request, so unrelated keys need one request each, each
+repeating the top of the trie. And it is verified by rebuilding a partial trie, which is more
+machinery than a verifier running inside a PolkaVM service should need.
 
 The compact proof defined here ships, for every branch on a path, only the identity of the child the
 path does not enter, and describes the shape of the proof with two bits per node. It answers a set
