@@ -27,7 +27,8 @@ branch. Each node is represented as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
-- `E`: an empty subtree, expanded or not.
+- `E`: an empty subtree. Every empty child is written as `E`, whether a query path ends at it or
+  not.
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
 A proof subtree proves:
@@ -72,12 +73,8 @@ Each tag is two bits: `B` is `00`, `H` is `01`, `E` is `10` and `L` is `11`. Tag
 the most significant bits of each octet down, so the first tag occupies bits 7 and 6 of the first
 octet of the `tags` section. The `tags` section ends when the subtree is complete: start with one
 subtree open; every tag closes one, and every `B` opens two more; the section ends when none is
-open.
-
-The `hashes` section contains 32 octets for each `H` tag and for each hash-only leaf. The `keys`
-section contains, for each kind octet whose leaf ships its key, $248 - d$ bits, $d$ being the depth
-of the corresponding `L`, rounded up to whole octets once at the end. The `values` section consumes
-all remaining octets.
+open. The later sections carry no lengths either: the tags and kinds determine how much each of
+`hashes` and `keys` holds, as described below, and `values` takes the remainder.
 
 The `kinds` section is a sequence of kind octets, one per `L` tag in tag order. A kind octet
 describes one leaf: bit 7 is set for a fully elided leaf and bit 6 for a key-elided leaf, and bits 5
