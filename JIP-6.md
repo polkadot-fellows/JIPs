@@ -6,10 +6,10 @@ of others against a trusted state root.
 ## Motivation
 
 A client that trusts a block's state root, for example from the block header, often needs a few
-values from that block's state without trusting the node that serves them. A state proof lets the
-node hand over the values together with enough of the state trie for the client to recompute the
-state root and compare. Any tampering with a value, or any omission of a key the client asked about,
-changes the recomputed root.
+values from that block's state without trusting the server that provides them. A state proof lets
+the server hand over the values together with enough of the state trie for the client to recompute
+the state root and compare. Any tampering with a value, or any omission of a key the client asked
+about, changes the recomputed root.
 
 A proof made of whole trie nodes, such as the range proof of the CE 129 state-request protocol,
 suits state synchronisation, where a reply carries thousands of consecutive key-value pairs and the
