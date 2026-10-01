@@ -5,31 +5,19 @@ of others against a trusted state root.
 
 ## Motivation
 
-A client that trusts a block's state root, for example from the block header, often needs a few
-values from that block's state without trusting the server that provides them. A state proof lets
-the server hand over the values together with enough of the state trie for the client to recompute
-the state root and compare. Any tampering with a value, or any omission of a key the client asked
-about, changes the recomputed root.
+A client that trusts a block's state root may need to verify a small set of state values without
+trusting the server that provides them. Existing whole-node proofs, such as the CE 129 range proof,
+work well for state synchronisation but are inefficient for a few unrelated keys: they ship
+redundant branch data, repeat common trie paths across requests, and require rebuilding a partial
+trie during verification.
 
-A proof made of whole trie nodes, such as the range proof of the CE 129 state-request protocol,
-suits state synchronisation, where a reply carries thousands of consecutive key-value pairs and the
-trie nodes are a small appendix. For a client asking for a handful of unrelated keys it fits badly.
-It ships every branch node on the path as a whole 64-octet node, although the verifier recomputes
-one of the two child identities in each node anyway, so about half of the proof is redundant. It
-answers one contiguous key range per request, so unrelated keys need one request each, each
-repeating the top of the trie. And it is verified by rebuilding a partial trie, which is more
-machinery than a verifier running inside a PolkaVM service should need.
+The proof defined here is designed for this smaller, selective access pattern.  It includes only the
+missing child identity at each branch, supports multiple keys and ranges in one proof, proves both
+presence and absence, and can omit keys or values already known to the client. It is verified in a
+single pass with a stack and is typically much smaller than a whole-node range proof for small
+queries.
 
-The compact proof defined here ships, for every branch on a path, only the identity of the child the
-path does not enter, and describes the shape of the proof with two bits per node. It answers a set
-of keys and a set of key ranges in one proof, proves absence as readily as presence, lets a client
-that already holds keys or values leave them out, and is verified in a single pass with a stack. For
-a single key at realistic state sizes it is about half the size of the range proof; for a range
-whose contents the client already holds it is a small fraction. The encoding is canonical, so one
-proof has one byte sequence, and a version octet leaves room for later revisions.
-
-JIP-2 uses this proof in its `stateProof` method. The format does not depend on how it is requested
-or transported, so other protocols may carry it as well.
+The proof format is independent of its transport and may be used by any protocol.
 
 ## Proof subtree
 
