@@ -27,8 +27,7 @@ branch. Each node is represented as one of:
 
 - `B`: an expanded branch, followed by its left child and then its right child.
 - `L`: an expanded leaf.
-- `E`: an empty subtree. Every empty child is written as `E`, whether a query path ends at it or
-  not.
+- `E`: an empty subtree.
 - `H`: a node that is neither expanded nor empty, given by its identity.
 
 A proof subtree proves:
