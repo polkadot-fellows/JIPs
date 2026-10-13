@@ -208,28 +208,25 @@ when the value changes.
 Chain Subscription Update. The `"value"` member is Null when there is no value under the given
 key, otherwise a Blob containing the value.
 
-### `stateProof(header_hash, keys, ranges, want_entries, size_limit)`
-Returns a State Proof for the given query in the posterior state of the block with the given
-header hash. The query and the proof are as defined in [JIP-6](./JIP-6.md).
+### `stateProof(header_hash, keys, want_entries, size_limit)`
+Returns a State Proof for the given keys in the posterior state of the block with the given header
+hash. The proof is as defined in [JIP-6](./JIP-6.md); the query is one of listed keys only, with
+no ranges.
 
-The server rejects the request with the JSON-RPC invalid params error if the query violates the
-constraints under [JIP-6](./JIP-6.md#proving-a-query), if `want_entries` is not a Boolean, or
-if `size_limit` is not a non-negative integer. Servers may clamp `size_limit` to a maximum of
-their choosing and may cap the number of listed keys plus ranges, rejecting a request over that
-cap with the same error. A server may also reject, with the same error, a request whose first
-charged key alone would make the reply exceed the server's response size cap.
+The server rejects the request with the JSON-RPC invalid params error if `keys` is not strictly
+ascending, if `want_entries` is not a Boolean, or if `size_limit` is not a non-negative integer.
+Servers may clamp `size_limit` to a maximum of their choosing and may cap the number of keys,
+rejecting a request over that cap with the same error. A server may also reject, with the same
+error, a request whose first key alone would make the reply exceed the server's response size cap.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
-2. `keys`: Array of State Keys: The listed keys, strictly ascending.
-3. `ranges`: Array of `[start, end]` Arrays, each a pair of Blobs: The ranges, ascending. Each
-   bound is a key prefix, not a State Key, and must decode to 0 to 31 octets. Both bounds are
-   inclusive.
-4. `want_entries`: Boolean: True to return the entries of the query, False to omit them for a
+2. `keys`: Array of State Keys: The keys to prove, strictly ascending.
+3. `want_entries`: Boolean: True to return the entries of the query, False to omit them for a
    requester that already holds them.
-5. `size_limit`: Number: A non-negative integer: soft limit on the size of the reply, in octets,
-   as defined under [JIP-6](./JIP-6.md#appendix-a-prover-contract). The first charged key is
-   included even if the reply for it alone exceeds the limit.
+4. `size_limit`: Number: A non-negative integer: soft limit on the size of the reply, in octets,
+   as defined under [JIP-6](./JIP-6.md#appendix-a-prover-contract). The first key is included
+   even if the reply for it alone exceeds the limit.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
@@ -237,8 +234,8 @@ An Object with the following members:
   [JIP-6](./JIP-6.md), each a key and its value, ascending by key. Empty if `want_entries` is
   False.
 - `"complete"`: Boolean. False if the size limit cut the query short.
-- `"last_proven_key"`: State Key. Present only if `"complete"` is False: the last charged key
-  included. The proof and the entries are those of the query cut at this key.
+- `"last_proven_key"`: State Key. Present only if `"complete"` is False: the last key included.
+  The proof and the entries are those of the query cut at this key.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
