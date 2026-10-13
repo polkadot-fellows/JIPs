@@ -48,6 +48,12 @@ For convenience the following common types are defined:
   - `"header_hash"`: Hash. Header hash of the block that triggered this update.
   - `"slot"`: Number. Slot of the block that triggered this update.
   - `"value"`: Subscription-specific.
+- State Key: A String, containing padded Base64-encoded binary data, as per RFC 4648. The decoded
+  data must be exactly 31 bytes in length: a raw state key, as defined by the state Merklization
+  appendix of the GP.
+- State Proof: A Blob, containing a compact Merkle proof of part of the state of some block. The
+  decoded data is the proof as defined in [JIP-6](./JIP-6.md). The requested keys and their values
+  are not part of it; they are returned beside it.
 
 ## Error codes
 
@@ -178,6 +184,58 @@ Returns the posterior state root of the block with the given header hash.
 1. `header_hash`: Hash.
 #### Result
 Hash: The state root.
+
+### `stateValue(header_hash, key)`
+Returns the value stored under the given raw state key in the posterior state of the block with
+the given header hash. Unlike `serviceValue`, this method takes a full 31-byte state key, so it
+can be used to read chain-level state components as well as any service state whose key the
+client can compute.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `key`: State Key.
+#### Result
+Null if there is no value under the given key, otherwise a Blob containing the value.
+
+### `subscribeStateValue(key, finalized)`
+Subscribe to updates of the value stored under the given raw state key. An update is sent only
+when the value changes.
+#### Parameters
+1. `key`: State Key.
+2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
+   "best" chain.
+#### Subscription update `"result"`
+Chain Subscription Update. The `"value"` member is Null when there is no value under the given
+key, otherwise a Blob containing the value.
+
+### `stateProof(header_hash, keys, want_entries, size_limit)`
+Returns a State Proof for the given keys in the posterior state of the block with the given header
+hash. The proof is as defined in [JIP-6](./JIP-6.md); the query is one of listed keys only, with
+no ranges.
+
+The server rejects the request with the JSON-RPC invalid params error if `keys` is not strictly
+ascending, if `want_entries` is not a Boolean, or if `size_limit` is not a non-negative integer.
+Servers may clamp `size_limit` to a maximum of their choosing and may cap the number of keys,
+rejecting a request over that cap with the same error. A server may also reject, with the same
+error, a request whose first key alone would make the reply exceed the server's response size cap.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `keys`: Array of State Keys: The keys to prove, strictly ascending.
+3. `want_entries`: Boolean: True to return the entries of the query, False to omit them for a
+   requester that already holds them.
+4. `size_limit`: Number: A non-negative integer: soft limit on the size of the reply, in octets,
+   as defined under [JIP-6](./JIP-6.md#appendix-a-prover-contract). The first key is included
+   even if the reply for it alone exceeds the limit.
+#### Result
+An Object with the following members:
+- `"proof"`: State Proof.
+- `"entries"`: Array of `[State Key, Blob]` Arrays: The entries of the query, as defined in
+  [JIP-6](./JIP-6.md), each a key and its value, ascending by key. Empty if `want_entries` is
+  False.
+- `"complete"`: Boolean. False if the size limit cut the query short.
+- `"last_proven_key"`: State Key. Present only if `"complete"` is False: the last key included.
+  The proof and the entries are those of the query cut at this key.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
