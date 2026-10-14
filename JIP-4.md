@@ -7,7 +7,8 @@ A chain specification collects information that describes a JAM-based network. I
 The chain specification root object includes the following keys:
 
 - `id` - the machine-readable identifier for the network. This may be used as part of the network protocol identifier in the future version of the network protocol.
-- `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<identity>[+<identity>...]@<ip>:<port>`, with one or more identities for the same node separated by `+`. At least one identity must be the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". Additional identity formats are permitted; clients must ignore identities they cannot interpret. `<ip>` is a string containing IPv4 or IPv6 address of the node. IPv6 address may optionally be specified in square brackets (`[]`). `<port>` is an IP port number.
+- `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where `<name>` is the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". `<ip>` is a string containing IPv4 or IPv6 address of the node. IPv6 address may optionally be specified in square brackets (`[]`). `<port>` is an IP port number.
+- `bootnodes-p256` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where `<name>` is the 53-character DNS name consisting of "o" or "v" followed by the 32-byte big-endian x-coordinate of the P-256 (secp256r1) public key, base-32 encoded in the same way as `bootnodes` using the alphabet "abcdefghijklmnopqrstuvwxyz234567". The prefix is "o" if the y-coordinate is odd and "v" if it is even. `<ip>` is a string containing IPv4 or IPv6 address of the node. IPv6 address may optionally be specified in square brackets (`[]`). `<port>` is an IP port number.
 - `genesis_header` - A hex string containing JAM-serialized genesis block header.
 - `genesis_state` - An object defining genesis state. Each key is a 62-character hex string defining the 31-byte state key. The values are arbitrary length hex strings.
 - `protocol_parameters` - A hex string containing JAM-serialized protocol parameters. Encoding matches protocol parameters returned by the [`fetch`](https://graypaper.fluffylabs.dev/#/7e6ff6a/32e400324e01?v=0.6.7) host call defined in the Gray Paper (B.6)
@@ -17,6 +18,7 @@ The example below shows a basic chain specification file. Note that this does no
 {
   "id": "testnet",
   "bootnodes": ["evysk4p563r2kappaebqykryquxw5lfcclvf23dqqhi5n765h4kkb@192.168.50.18:62061", "egy5qba5fyjf7hn7bxeroo7ncqfk5otxvo6or77k23o6pjqnxdoxb@192.168.50.20:63747"],
+  "bootnodes-p256": ["ol3fcnzh4mrqoe4txgpzhgscis75gq6fqnz2hdqs6bnokemdtcwfb@192.168.50.18:443"],
   "genesis_header": "1ee155ace9c40292074cb6aff8c9ccdd273c81648ff1149ef36bcea6ebb8a3e25bb30a42c1e62f0afda5f0a4e8a562f7a13a24cea00ee81917b86b89e801314aa4aa54d1a89973300d7e2493a1b512fecd848f4e8a63fb3a59d38a6b2c1610d9a2c98544eeb3df",
   "genesis_state": {
     "01000000000000000000000000000000000000000000000000000000000000": "08b647818aef53ffdf401882ab552f3ea21a57bdfe3fb4554a518a6fea139ca894b0",
