@@ -445,12 +445,12 @@ root hash.
 Array of Blobs: The requested segments. Each Blob should be 4104 bytes long and the length of the
 Array should match the length of the `indices` Array passed in to the method.
 
-### `fetchWorkPackageBundle(report_hash)`
-Fetches the work-package bundle for the work-report with the given hash from the DA layer. This is
-best-effort: it depends on the assurers still holding the bundle shards and on the work-report still
-being known to the node.
+### `fetchWorkPackageBundle(wp_hash)`
+Fetches the bundle of the work-package with the given hash from the DA layer. This is best-effort: it
+depends on the assurers still holding the bundle shards and on the work-package still being known to
+the node as available.
 #### Parameters
-1. `report_hash`: Hash: Hash of the work-report.
+1. `wp_hash`: Hash: Hash of the work-package.
 #### Result
 Blob: The work-package bundle, encoded as per the GP.
 
