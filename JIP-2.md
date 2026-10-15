@@ -58,6 +58,7 @@ The following error codes are defined:
 - 2: Work-report unavailable. The `"data"` member of the error Object should be the Hash of the
   work-report.
 - 3: DA segment unavailable.
+- 4: DA bundle unavailable.
 - 0: Other error.
 
 Later revisions of this specification may define further error codes, as such:
@@ -443,6 +444,15 @@ root hash.
 #### Result
 Array of Blobs: The requested segments. Each Blob should be 4104 bytes long and the length of the
 Array should match the length of the `indices` Array passed in to the method.
+
+### `fetchWorkPackageBundle(wp_hash)`
+Fetches the bundle of the work-package with the given hash from the DA layer. This is best-effort: it
+depends on the assurers still holding the bundle shards and on the work-package still being known to
+the node as available.
+#### Parameters
+1. `wp_hash`: Hash: Hash of the work-package.
+#### Result
+Blob: The work-package bundle, encoded as per the GP.
 
 ### `syncState()`
 Returns the sync state of the node.
