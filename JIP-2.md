@@ -208,34 +208,35 @@ when the value changes.
 Chain Subscription Update. The `"value"` member is Null when there is no value under the given
 key, otherwise a Blob containing the value.
 
-### `stateProof(header_hash, keys, want_entries, size_limit)`
-Returns a State Proof for the given keys in the posterior state of the block with the given header
-hash. The proof is as defined in [JIP-6](./JIP-6.md); the query is one of listed keys only, with
-no ranges.
+### `stateProof(header_hash, keys, size_limit)`
+Returns the values of the given keys in the posterior state of the block with the given header
+hash, with a State Proof of them. The proof is as defined in [JIP-6](./JIP-6.md); the server
+builds it for the keys as described in its Appendix A, with no ranges.
+
+The reply covers the first keys of `keys`, as many as the size limit allows. The size of a reply is
+the number of octets of the encoded proof plus the lengths of the values in it. The server must
+choose the covered keys so that the size of the reply does not exceed `size_limit`, except that it
+must always cover the first key, even if the reply for it alone exceeds the limit. It may cover
+fewer keys than would fit. The proof and the values are those of the covered keys alone, and the
+requester must verify them as such. The keys not covered have to be requested again.
 
 The server rejects the request with the JSON-RPC invalid params error if `keys` is not strictly
-ascending, if `want_entries` is not a Boolean, or if `size_limit` is not a non-negative integer.
-Servers may clamp `size_limit` to a maximum of their choosing and may cap the number of keys,
-rejecting a request over that cap with the same error. A server may also reject, with the same
-error, a request whose first key alone would make the reply exceed the server's response size cap.
+ascending or if `size_limit` is not a non-negative integer. Servers may clamp `size_limit` to a
+maximum of their choosing and may cap the number of keys, rejecting a request over that cap with
+the same error. A server may also reject, with the same error, a request whose first key alone
+would make the reply exceed the server's response size cap.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
 2. `keys`: Array of State Keys: The keys to prove, strictly ascending.
-3. `want_entries`: Boolean: True to return the entries of the query, False to omit them for a
-   requester that already holds them.
-4. `size_limit`: Number: A non-negative integer: soft limit on the size of the reply, in octets,
-   as defined under [JIP-6](./JIP-6.md#appendix-a-prover-contract). The first key is included
-   even if the reply for it alone exceeds the limit.
+3. `size_limit`: Number: A non-negative integer: soft limit on the size of the reply, in octets.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
-- `"entries"`: Array of `[State Key, Blob]` Arrays: The entries of the query, as defined in
-  [JIP-6](./JIP-6.md), each a key and its value, ascending by key. Empty if `want_entries` is
-  False.
-- `"complete"`: Boolean. False if the size limit cut the query short.
-- `"last_proven_key"`: State Key. Present only if `"complete"` is False: the last key included.
-  The proof and the entries are those of the query cut at this key.
+- `"values"`: Array of `Blob or Null`: One member per covered key, in the order of `keys`: the
+  value under the key, or Null if the key is absent. The array is shorter than `keys` if the size
+  limit cut the reply: an array of `n` members covers the first `n` keys. The array is empty only
+  if `keys` is.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
