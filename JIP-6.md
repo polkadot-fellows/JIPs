@@ -250,7 +250,11 @@ A verifier may keep the proof subtree after verification and decide further keys
 key is present if it is the key of an entry or of an `R`, absent if its path ends at a `K` or at an
 `R` holding a different key, and not proven either way if its path leaves through an `H`.
 
-## Proving a query
+## Appendix A: Building a proof for a query
+
+This appendix is informative. It gives the rules a prover follows to build the proof of a query,
+and the checks a verifier makes that a proof covers its query. A prover may build a proof in any
+other way, as long as the verifier accepts it.
 
 A query consists of:
 
@@ -272,7 +276,8 @@ A prover must reject a query that violates these constraints.
 The entries of a query are the pairs of the state whose key is a listed key or lies within a range.
 The prover builds the proof subtree of the query with the rules under [Construction](#construction);
 its claims then include the presence of every entry, the absence of every listed key that is not in
-the state, and the contents of every range.
+the state, and the contents of every range: every state key within a range is an entry, and no
+other key within the range is in the state.
 
 ### Construction
 
@@ -309,84 +314,22 @@ The following consequences hold:
 - Two listed keys whose paths end at the same leaf need no special rule. The leaf is a `K` if its
   key is the key of an entry, and an `R` otherwise.
 
-### Checking a reply against the query
+### Checking a proof against the query
 
-A verifier that checks a proof against a query it made must also check that the claims of the proof
-cover the query:
+A verifier that made a query gives verification its listed keys, each with the value it received
+or marked absent. Verification then proves each listed key as given, or fails.
 
-- no `H` stands for a node under which a listed key lies;
-- no `H` stands for a node under which a key within a range lies;
-- no `R` holds a listed key or a key within a range.
+For a range, the verifier must also check the proof subtree:
 
-The first check is the lookup of each listed key. The second is needed because the verifier cannot
-look up the keys of a range one by one: such an `H` could hide keys of the range, which would then
-be neither present nor absent. The third is needed because such an `R` would prove a requested key
-without delivering it as an entry, and might ship only the hash of its value.
+- no `H` stands for a node under which a key within the range lies;
+- no `R` holds a key within the range.
 
-## Appendix A: Prover contract
-
-A prover that serves the proof over a transport must follow this appendix. A verifier that only
-checks proofs does not need it.
-
-A transport, such as the `stateProof` method of JIP-2 or a CE message, carries queries to a prover
-and replies back. This appendix defines the exchange independently of the transport, so that every
-transport limits and cuts replies the same way.
-
-The request and the reply have this shape:
-
-    request = query, limit
-    query   = listed keys, ranges       as defined under Proving a query
-    limit   = a number of octets, or none
-    reply   = proof, entries, status
-    status  = complete | cut at a key
-
-A transport maps the request and the reply onto its own messages. It must carry the status. It may
-let the verifier ask for the entries to be omitted, may clamp the limit, and may reject a query it
-considers too large.
-
-### Charged keys
-
-The prover chooses the cut among the charged keys of the query: its listed keys and the keys of
-the state that lie within its ranges. Since the listed keys are sorted, the ranges are sorted and
-disjoint, and no listed key lies within a range, the charged keys form one ascending sequence. A
-range containing no key of the state adds no charged keys.
-
-### Size of a reply
-
-The size of a reply is the number of octets of its encoded proof plus the octets of its entries,
-$31$ plus the length of the value for each entry. The entries count only when the transport sends
-them.
-
-### Cutting a reply
-
-The query cut at a key $k$ is a shorter query derived from the original:
-
-- it keeps the listed keys that do not exceed $k$;
-- it removes every range whose padded `start` exceeds $k$;
-- it ends every remaining range whose padded `end` exceeds $k$ at $k$.
-
-The prover must choose a cut key $k$ among the charged keys such that the size of the reply for
-the query cut at $k$ does not exceed the limit. It may choose an earlier charged key than the last
-one for which this holds. It must include the first charged key even if the reply for the query
-cut at it exceeds the limit.
-
-If the cut key is the last charged key, the reply is that of the whole query and the status is
-complete. Otherwise the status is cut at $k$. With no limit, the prover includes every charged key
-and the status is complete.
-
-A cut reply is not a special form of proof. Its entries and its proof are those of the query cut at
-the cut key, and the verifier checks it as the reply to that query. A verifier that holds entries
-of its own must use only those of the cut query.
-
-The cut cannot be inferred from the proof. A cut proof may still cover the whole query, because an
-absent listed key can open the region the cut removed. The verifier must take the cut from the
-status, not from the proof.
-
-A verifier may continue with a new query made of the listed keys that exceed the cut key and the
-parts of the ranges that lie after it.
-
-A prover can find the cut in one walk over the charged keys, keeping the size of the reply for the
-query cut at the current key, and then build the proof once.
+The first check is needed because the verifier cannot look up the keys of a range one by one: such
+an `H` could hide keys of the range, which would then be neither present nor absent. The second is
+needed because such an `R` would prove a key of the range without delivering it as an entry, and
+might ship only the hash of its value. A proof that passes verification and both checks proves the
+contents of the range: every node within the range is a `K`, rebuilt from the entries alone, so a
+state key missing from the entries would change the hash.
 
 ## Appendix B: Test vectors
 
