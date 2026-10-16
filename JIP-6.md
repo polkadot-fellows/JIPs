@@ -1,7 +1,8 @@
 # JIP-6: Compact state proofs
 
 A compact Merkle proof for the JAM state trie. Together with the state entries it accompanies, it
-proves those entries, and the absence of other keys, against a trusted state root.
+proves those entries, and the absence of every other key under the subtrees it opens, against a
+trusted state root.
 
 ## Motivation
 
@@ -42,22 +43,22 @@ document uses the following terms for the state trie:
 
 This document uses the following terms for proofs:
 
-- A _query_ is what a verifier asks a prover to prove: a set of listed keys and a set of key
-  ranges. Its exact form and constraints are given under [Proving a query](#proving-a-query).
 - An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it received
   with the proof together with those it already held. Their keys are unique and ascending.
-- The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree). A
-  query names the claims a verifier wants.
+- The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
+- A _query_ is what a verifier asks a prover to prove: a set of keys, or of key ranges, whose
+  presence or absence the proof must claim. How a prover builds the proof of a query is given in
+  [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
-The prover holds the state. It answers a query with two things: the entries of the query, and a
-proof that claims at least what the query asks for. The proof never carries the key or the value of
-an entry. A listed key that is absent from the state has no entry; its absence follows from the
-proof.
+The prover holds the state. It answers with the entries and a proof. The proof never carries the
+key or the value of an entry. A key that is absent from the state has no entry; its absence follows
+from the proof.
 
-The verifier holds a trusted state root. It checks the entries against that root with the proof, as
-defined under [Verification](#verification). This document defines the entries as an input of the
-verifier, not how they are encoded. A transport carrying the proof may let the prover omit entries
-that the verifier already holds.
+The verifier holds a trusted state root. It checks the entries, and the absence of the keys it
+expects to be absent, against that root with the proof, as defined under
+[Verification](#verification). This document defines the entries as an input of the verifier, not
+how they are encoded. A transport carrying the proof may let the prover omit entries that the
+verifier already holds.
 
 ## Proof subtree
 
@@ -172,7 +173,8 @@ A verifier must reject a proof of version 0 if any of the following holds:
 12. An entry lies under no `K`.
 13. The hash of the root of the proof subtree differs from the trusted state root.
 
-Rule 4 rejects branches that the rules under [Construction](#construction) never produce:
+Rule 4 rejects branches that the construction rules of
+[Appendix A](#appendix-a-building-a-proof-for-a-query) never produce:
 
 - two `H`: construction rule 3 opens a branch only for a key that lies under one of its children,
   and that child is then not an `H`;
@@ -183,18 +185,18 @@ Rule 4 rejects branches that the rules under [Construction](#construction) never
 These rules give every proof subtree exactly one encoding. The verifier accepts any canonically
 encoded proof subtree whose root hash is the state root.
 
-The verifier does not check that the proof subtree is the one the construction rules give for a
-query. A proof may therefore open more of the trie than the query needs, which proves more keys,
-never fewer. The checks a verifier makes against its own query are listed under
-[Checking a reply against the query](#checking-a-reply-against-the-query).
+The verifier does not check that the proof subtree is the smallest one for its keys. A proof may
+open more of the trie than needed, which proves more keys, never fewer.
 
 A verifier may bound the size of the proofs it accepts.
 
 ## Verification
 
-The verifier takes three inputs: the proof, a trusted state root, and its entries. While reading
-the tags in order, it keeps the path to the current node and a stack of open branches, those whose
-right child is still to come. Each slot of the stack is empty or holds a left child's tag and hash.
+The verifier takes three inputs: the proof, a trusted state root, and a set of keys, unique and
+ascending, each with its value or marked absent. The keys with a value are its entries; the others
+are its absent keys. While reading the tags in order, it keeps the path to the current node and a
+stack of open branches, those whose right child is still to come. Each slot of the stack is empty
+or holds a left child's tag and hash.
 
 Reading a `B` opens a branch: a slot is pushed and the left child is read next. When a node
 completes and the top slot is empty, the node is a left child. Its tag and hash are stored in the
@@ -226,6 +228,7 @@ state root:
             check rule 4 on (left tag, tag)
             hash = hash of the branch node with children left hash and hash; tag = B
     require every entry is consumed
+    require the path of every absent key ends at a K, or at an R holding a different key
     require every section is consumed exactly
 
 The pseudo-code omits the other canonical-form rules, which are checked as each tag, hash, key and
@@ -239,20 +242,13 @@ For an `R`, the leaf node depends on the form octet:
 - form `0` to `32`: the leaf node embeds the data as the value;
 - form `33`: the leaf node holds the data as the hash of the value.
 
-The result of verification is the set of present keys and the set of paths of the `H` nodes. The
-present keys are:
+A proof that passes verification proves that every key is as given: each entry is in the state
+with its value, and each absent key is not in the state. An absent key whose path leaves the proof
+subtree through an `H` fails verification: the proof says nothing about the keys under an `H`.
 
-- the keys of the entries, with their values, and
-- the keys of the `R` leaves, each with its value or the hash of its value.
-
-A key is then:
-
-- Present, if it is a present key.
-- Absent, if it is not present and its path in the proof subtree ends at a `K` or at an `R` holding
-  a different key.
-- Not covered, otherwise. Its path leaves the proof subtree through an `H`.
-
-A verifier must treat a key that is not covered as a failed proof, never as an absent key.
+A verifier may keep the proof subtree after verification and decide further keys in the same way. A
+key is present if it is the key of an entry or of an `R`, absent if its path ends at a `K` or at an
+`R` holding a different key, and not proven either way if its path leaves through an `H`.
 
 ## Proving a query
 
