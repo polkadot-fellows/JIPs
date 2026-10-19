@@ -31,9 +31,9 @@ document uses the following terms for the state trie:
 - The _path to a node_ is the sequence of bits walked from the root to reach it: `0` to the left
   child, `1` to the right child. The path to the root is empty, and the _depth of a node_ is the
   length of its path.
-- The _hash of a node_ is the blake2b-256 hash of the node's encoding as per the GP. The hash of an
-  empty subtree is the zero hash. The GP calls this hash the identity of the (sub-)trie; this
-  document calls it the hash.
+- The _hash of a node_ is the blake2b-256 hash of the node's encoding as per the GP. The GP calls
+  this hash the identity of the (sub-)trie; this document calls it the hash. The hash of an empty
+  subtree is the zero hash.
 - A key _lies under_ a node when the path to the node is a prefix of the key, that is, when the key
   belongs to the subtree rooted at the node. The term applies to any key of 248 bits, whether or
   not it is in the state.
@@ -62,14 +62,15 @@ verifier already holds.
 
 ## Proof subtree
 
-A proof subtree is a part of the state trie that contains the root and, for every other node in it,
-the node's parent. Each node of a proof subtree has one of four tags:
+A proof subtree is a part of the state trie that contains the root of the state trie and, for every
+other node in it, the node's parent. Each node of a proof subtree has one of four tags:
 
 | Tag | Name | Meaning | The proof ships |
 |---|---|---|---|
 | `B` | expanded branch | a branch whose two children are in the proof subtree | nothing |
 | `H` | hashed subtree | a non-empty subtree that is not opened | its hash |
-| `K` | known subtree | a subtree under which every state key is the key of an entry | nothing |
+| `K` | known subtree | a subtree that is not opened, under which every state key is the key of an
+entry | nothing |
 | `R` | raw leaf | a leaf whose key is not the key of an entry | key suffix; value or value hash |
 
 A `K` under which no state key lies is an empty subtree. The verifier computes the hash of a `K` by
