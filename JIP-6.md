@@ -1,8 +1,7 @@
 # JIP-6: Compact state proofs
 
 A compact Merkle proof for the JAM state trie. Together with a set of state entries, it proves
-those entries, and the absence of every other key under the subtrees it opens, against a trusted
-state root.
+those entries, and the absence of other keys, against a trusted state root.
 
 ## Motivation
 
@@ -46,7 +45,7 @@ This document uses the following terms for proofs:
 - An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it checks.
   Their keys are unique and ascending.
 - The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
-- A _query_ is what a verifier asks a prover to prove: a set of keys, or of key ranges, whose
+- A _query_ is what a verifier asks a prover to prove: a set of keys and key ranges, whose
   presence or absence the proof must claim. How a prover builds the proof of a query is given in
   [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
@@ -251,9 +250,9 @@ key is present if it is the key of an entry or of an `R`, absent if its path end
 
 ## Appendix A: Building a proof for a query
 
-This appendix is informative. It gives the rules a prover follows to build the proof of a query,
-and the checks a verifier makes that a proof covers its query. A prover may build a proof in any
-other way, as long as the verifier accepts it.
+This appendix is informative. It gives one way to build the proof of a query, the one the test
+vectors use, and the checks a verifier makes that a proof covers its query. A prover may build a
+proof in any other way, as long as the verifier accepts it.
 
 A query consists of:
 
