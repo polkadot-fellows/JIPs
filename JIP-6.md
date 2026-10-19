@@ -45,8 +45,8 @@ This document uses the following terms for proofs:
 - An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it checks.
   Their keys are unique and ascending.
 - The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
-- A _query_ is what a verifier asks a prover to prove: a set of keys and key ranges, whose
-  presence or absence the proof must claim. How a prover builds the proof of a query is given in
+- A _query_ is what a verifier asks a prover to prove: a set of keys and key ranges that the proof
+  must cover. How a prover builds the proof of a query is given in
   [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
 The prover holds the state and builds the proof. The proof never carries the key or the value of
@@ -264,13 +264,13 @@ octets with `0xFF`, both inclusive. `[p, p]` is thus every key starting with `p`
 empty]` is every key, since the empty prefix pads to the lowest key as a start and to the highest
 key as an end.
 
-A query must satisfy the following, with bounds compared after padding:
+This construction requires a query to satisfy the following, with bounds compared after padding:
 
 - each range's `start` does not exceed its `end`;
 - each range's `start` exceeds the previous range's `end`;
 - no listed key lies within a range.
 
-A prover must reject a query that violates these constraints.
+A query that violates these constraints is not valid for this construction.
 
 The entries of a query are the pairs of the state whose key is a listed key or lies within a range.
 The prover builds the proof subtree of the query with the rules under [Construction](#construction);
