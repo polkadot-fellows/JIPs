@@ -327,9 +327,8 @@ The first check is needed because the verifier cannot look up the keys of a rang
 an `H` could hide keys of the range, which would then be neither present nor absent. The second is
 needed because such an `R` would prove a key of the range without delivering it as an entry, and
 might ship only the hash of its value. A proof that passes verification and both checks proves the
-contents of the range: a `K` is rebuilt from the entries alone, an `H` cannot hide a state key
-within the range, and an `R` cannot hold a state key within the range. Every state key within the
-range is therefore among the entries.
+contents of the range: every state key within the range then lies under a `K`, which is rebuilt from
+the entries alone, so the key must be among the entries.
 
 ## Appendix B: Test vectors
 
