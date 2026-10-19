@@ -1,8 +1,8 @@
 # JIP-6: Compact state proofs
 
-A compact Merkle proof for the JAM state trie. Together with the state entries it accompanies, it
-proves those entries, and the absence of every other key under the subtrees it opens, against a
-trusted state root.
+A compact Merkle proof for the JAM state trie. Together with a set of state entries, it proves
+those entries, and the absence of every other key under the subtrees it opens, against a trusted
+state root.
 
 ## Motivation
 
@@ -43,22 +43,20 @@ document uses the following terms for the state trie:
 
 This document uses the following terms for proofs:
 
-- An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it received
-  with the proof together with those it already held. Their keys are unique and ascending.
+- An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it checks.
+  Their keys are unique and ascending.
 - The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
 - A _query_ is what a verifier asks a prover to prove: a set of keys, or of key ranges, whose
   presence or absence the proof must claim. How a prover builds the proof of a query is given in
   [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
-The prover holds the state. It answers with the entries and a proof. The proof never carries the
-key or the value of an entry. A key that is absent from the state has no entry; its absence follows
-from the proof.
+The prover holds the state and builds the proof. The proof never carries the key or the value of
+an entry. A key that is absent from the state has no entry; its absence follows from the proof.
 
 The verifier holds a trusted state root. It checks the entries, and the absence of the keys it
 expects to be absent, against that root with the proof, as defined under
 [Verification](#verification). This document defines the entries as an input of the verifier, not
-how they are encoded. A transport carrying the proof may let the prover omit entries that the
-verifier already holds.
+how they are encoded or where the verifier gets them.
 
 ## Proof subtree
 
@@ -264,7 +262,8 @@ A query consists of:
 
 A range contains every key from `start` padded to 31 octets with `0x00` up to `end` padded to 31
 octets with `0xFF`, both inclusive. `[p, p]` is thus every key starting with `p`, and `[empty,
-empty]` is every key.
+empty]` is every key, since the empty prefix pads to the lowest key as a start and to the highest
+key as an end.
 
 A query must satisfy the following, with bounds compared after padding:
 
