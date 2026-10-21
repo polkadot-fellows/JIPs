@@ -48,6 +48,22 @@ For convenience the following common types are defined:
   - `"header_hash"`: Hash. Header hash of the block that triggered this update.
   - `"slot"`: Number. Slot of the block that triggered this update.
   - `"value"`: Subscription-specific.
+- Merkle Path: An Array of Hash. Sibling hashes ordered from the leaf toward the root.
+- WB Proof: An Object proving inclusion in a GP well-balanced binary Merkle tree (Keccak). Members:
+  - `"leaf_index"`: Number. Zero-based leaf index.
+  - `"leaf_count"`: Number. Number of leaves when the proof was built.
+  - `"path"`: Merkle Path. Sibling subtree digests on the path from that leaf to the root.
+- MMR Proof: An Object proving inclusion of one leaf under a GP MMR super-peak (Keccak). Members:
+  - `"leaf_index"`: Number. Zero-based leaf index in append order.
+  - `"peaks"`: Array of Hash or Null. Full GP peak list after that leaf was appended (peak at
+    index $i$ is Null or the root of a mountain of $2^i$ leaves).
+  - `"mountain_path"`: Merkle Path. Siblings within the mountain that contains `"leaf_index"`,
+    leaf toward that mountain's peak; length equals that peak's index $k$.
+- BEEFY Commitment: An Object:
+  - `"validator_index"`: Number. Index into the posterior active validator set of the referenced
+    block.
+  - `"signature"`: Blob. A valid GP BLS12-381 signature for that validator's 144-octet BLS public
+    key over the commitment message defined under `beefyCommitments`.
 
 ## Error codes
 
@@ -58,6 +74,15 @@ The following error codes are defined:
 - 2: Work-report unavailable. The `"data"` member of the error Object should be the Hash of the
   work-report.
 - 3: DA segment unavailable.
+- 4: Proof unavailable. The block is known but the node cannot produce the requested proof
+  (material pruned or never retained). The `"data"` member should be the Hash of the block's
+  header.
+- 5: Leaf not found. No accumulation output for the given service in the block, or `leaf_index`
+  out of range. The `"data"` member may be the service id or leaf index (Number).
+- 6: Commitments unavailable. The block is finalized but the node holds no BEEFY signatures for
+  it. The `"data"` member should be the Hash of the block's header.
+- 7: Not finalized. The method requires a finalized block. The `"data"` member should be the Hash
+  of the block's header.
 - 0: Other error.
 
 Later revisions of this specification may define further error codes, as such:
@@ -185,6 +210,102 @@ Returns the BEEFY root of the block with the given header hash.
 1. `header_hash`: Hash.
 #### Result
 Hash: The BEEFY root.
+
+### `accumulationOutputs(header_hash)`
+Returns the accumulation-output sequence produced when executing the block with the given header
+hash (GP `lastaccout` for that block; state-key $C(16)$ in the posterior state).
+#### Parameters
+1. `header_hash`: Hash.
+#### Result
+Blob: That sequence, encoded as per the GP.
+If the sequence is not retained, error 4.
+
+### `accumulationOutputProof(header_hash, service_id)`
+Returns a two-layer inclusion proof that `service_id` emitted an accumulation output in the given
+block, under that block's BEEFY root (identical to `beefyRoot(header_hash)`).
+
+Let $S$ be the accumulation-output sequence of the block (same as `accumulationOutputs`). Let
+$j$ be the least index in $S$ whose service id equals `service_id`. If no such entry exists,
+error 5. Let `yield_hash` be that entry's hash.
+
+1. Inner (well-balanced, Keccak): leaf blob $L = \mathrm{encode}_4(\textit{service\_id}) \mathbin{\Vert}
+   \textit{yield\_hash}$ (4-octet little-endian service id as in the GP, then the 32-octet yield
+   hash). $R = \mathrm{merklize_{WB}}(S', \mathrm{keccak})$ where $S'$ is the sequence of such
+   leaf blobs for every entry of $S$ in order. `"inner"` proves $L$ at index $j$.
+2. Outer (MMR, Keccak): $R$ is the leaf appended to the accumulation-output MMR for this block.
+   `"outer"` proves that leaf under the MMR super-peak (the BEEFY root).
+
+#### Parameters
+1. `header_hash`: Hash.
+2. `service_id`: Number.
+#### Result
+An Object:
+- `"yield_hash"`: Hash.
+- `"block_output_root"`: Hash. $R$.
+- `"beefy_root"`: Hash.
+- `"leaf_index"`: Number. MMR leaf index of $R$ (zero-based append index).
+- `"inner"`: WB Proof (`"leaf_index"` $= j$, `"leaf_count"` $= |S|$).
+- `"outer"`: MMR Proof.
+
+If proof material is missing, error 4.
+
+Clients verify `"inner"` with GP well-balanced Merklization and `"outer"` with GP MMR super-peak
+(both Keccak), against `"block_output_root"` and `"beefy_root"` respectively.
+
+### `beefyMmrProof(header_hash, leaf_index)`
+Returns an MMR inclusion proof for the leaf at `leaf_index` under the posterior accumulation-output
+MMR of the given block (after that block's leaf has been appended). Clients verify with GP MMR
+super-peak (Keccak) against `"beefy_root"`.
+#### Parameters
+1. `header_hash`: Hash.
+2. `leaf_index`: Number.
+#### Result
+An Object:
+- `"leaf"`: Hash. The 32-octet leaf value (a block's accumulation-output root $R$).
+- `"beefy_root"`: Hash. Super-peak of `"proof"."peaks"`.
+- `"proof"`: MMR Proof with this `"leaf_index"`.
+
+If `leaf_index` is out of range, error 5. If proof material is missing, error 4.
+
+### `beefyCommitments(header_hash)`
+Returns known individual BEEFY commitments for a **finalized** block. Per GP eq. for accumulate
+commitments, each signature is over the 32+32 octet message
+$\texttt{\$jam\_beefy} \mathbin{\Vert} \textit{beefy\_root}$ where $\texttt{\$jam\_beefy}$ is the
+ASCII bytes of that token with no terminator, and `beefy_root` equals `beefyRoot(header_hash)`.
+`"validator_index"` refers to the posterior active set of this block.
+#### Parameters
+1. `header_hash`: Hash.
+#### Result
+An Object:
+- `"beefy_root"`: Hash.
+- `"commitments"`: Array of BEEFY Commitment, in ascending `"validator_index"` order. Only
+  validators for which the node holds a signature. Duplicate indices must not appear.
+
+If the block is not finalized, error 7. If finalized but the Array would be empty, error 6.
+
+### `beefyJustification(header_hash)`
+Returns an aggregated BEEFY justification for a **finalized** block when the node holds an
+aggregate that includes at least $\lfloor 2V/3 \rfloor + 1$ distinct signers from the posterior
+active set ($V$ = that set's length), using the aggregation mechanism of
+[cryptoeprint:2022/1611](https://eprint.iacr.org/2022/1611). That threshold is a requirement of
+**this RPC** for returning a non-Null result; it is not an additional GP consensus rule. If the
+node has no such aggregate, return Null (clients may use `beefyCommitments`).
+#### Parameters
+1. `header_hash`: Hash.
+#### Result
+Null, or an Object:
+- `"beefy_root"`: Hash. Same message root as `beefyCommitments`.
+- `"signers"`: Blob. Bitfield of length $\lceil V/8 \rceil$ octets; bit $i$ (0-based) of the
+  bitfield is set iff validator index $i$ is included in the aggregate; bit $i$ lies in octet
+  $\lfloor i/8 \rfloor$ at shift $i \bmod 8$ (least-significant bit = shift 0); unused high bits
+  in the final octet are zero.
+- `"signature"`: Blob. Aggregated BLS signature over the same message as `beefyCommitments`.
+
+If the block is not finalized, error 7.
+
+A node that implements the accumulation-output / BEEFY methods above must retain enough material to
+serve them for every block in at least the recent-history window $H$ (`"recent_block_count"` from
+`parameters`); otherwise return error 4 or 6.
 
 ### `statistics(header_hash)`
 Returns the activity statistics stored in the posterior state of the block with the given header
