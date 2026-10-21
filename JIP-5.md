@@ -75,3 +75,12 @@ Such seeds should be used for testing purposes only.
     ed25519_public = 11a695f674de95ff3daaff9a5b88c18448b10156bf88bc04200e48d5155c7243
     bandersnatch_secret_seed = 06154d857537a9b622a9a94b1aeee7d588db912bfc914a8a9707148bfba3b9d1
     bandersnatch_public = 7273ec723f5f99e8ecb0d00417d0138eee582c1e0effbdfb38a425572d815009
+
+## Gray Paper 0.8.0 and earlier
+
+Gray Paper 0.8.0 and earlier releases refer to draft 29 or earlier of the Bandersnatch VRF-AD
+Specification. With these releases, this document used appendix A.1 of draft 29: the secret scalar
+is the SHA-512 hash of `bandersnatch_secret_seed`, read as a little-endian integer and reduced
+modulo the order of the scalar field. That method gives different Bandersnatch public keys. The
+other values do not change. The test vectors of that version of this document are at
+<https://github.com/polkadot-fellows/JIPs/blob/7048f79edf4f4eb8bfe6fb42e6bbf61900f44c65/JIP-5.md>.
