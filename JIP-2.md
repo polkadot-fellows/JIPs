@@ -53,8 +53,8 @@ For convenience the following common types are defined:
 
 The following error codes are defined:
 
-- 1: Block unavailable. The `"data"` member of the error Object should be the Hash of the block's
-  header.
+- 1: Block unavailable: the server does not know the block, or no longer keeps its state. The
+  `"data"` member of the error Object should be the Hash of the block's header.
 - 2: Work-report unavailable. The `"data"` member of the error Object should be the Hash of the
   work-report.
 - 3: DA segment unavailable.
@@ -65,6 +65,13 @@ Later revisions of this specification may define further error codes, as such:
 - RPC clients should not assume this list is exhaustive.
 - RPC servers should only use error codes defined here or in the JSON-RPC specification; they
   should not invent additional codes.
+
+## State not yet computed
+
+A method reading the posterior state of a block the server knows but has not finished importing,
+such as the head just returned by `bestBlock`, should wait until that state is available rather
+than return an error. Reads of statistics and service data wait for the block's accumulation;
+`stateRoot` waits for the state root.
 
 ## Chain subscriptions
 
