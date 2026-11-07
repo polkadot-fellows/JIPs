@@ -56,6 +56,7 @@ The following types are defined:
     Core Index = u16
     Service ID = u32
     Shard Index = u16
+    Tranche = u8 (Audit tranche index)
 
     Hash = [u8; 32]
     Header Hash = Hash
@@ -145,6 +146,12 @@ The following types are defined:
         4 (Other)
         (Single byte)
 
+    Verdict =
+        0 (Good, ie the report is valid) OR
+        1 (Bad, ie the report is invalid) OR
+        2 (Wonky, ie neither a valid nor an invalid supermajority was reached)
+        (Single byte)
+
     Announced Preimage Forget Reason =
         0 (Provided on-chain) OR
         1 (Not requested on-chain) OR
@@ -159,6 +166,11 @@ The following types are defined:
         2 (Too many preimages) OR
         3 (Other)
         (Single byte)
+
+    Audit Announcement Outline =
+        Header Hash (Block being audited) ++
+        Tranche ++
+        len++[Core Index ++ Work-Report Hash] (Reports being audited)
 
 ## Node information message
 
@@ -421,6 +433,18 @@ accumulated services list should not exceed 500. If more than 500 services are a
 block, the costs of the services with lowest total gas usage should be combined and reported with
 service ID 0xffffffff (note that this is otherwise not a valid service ID). Ties should be broken
 by combining services with greater IDs.
+
+### 48: Dispute settled
+
+Emitted following successful execution of a block containing dispute verdicts, once for each verdict
+in the block. This should be emitted by both the block author and importers. The culprits and faults
+are those included in the same block as the verdict.
+
+    Event ID (ID of the corresponding "authoring" or "importing" event)
+    Work-Report Hash
+    Verdict
+    len++[Validator Index] (Culprits, ie guarantors of a report judged invalid)
+    len++[Validator Index] (Faults, ie validators whose judgement contradicts the verdict)
 
 ## Block distribution events
 
@@ -863,7 +887,7 @@ These events concern recovery of work-package bundles for auditing.
 
 Emitted when an auditor begins sending a bundle shard request to an assurer (CE 138).
 
-    Event ID (TODO, should reference auditing event)
+    Event ID (ID of the corresponding "auditing report" event)
     Peer ID (Assurer)
     Shard Index
 
@@ -907,20 +931,20 @@ sides, ie the auditor and the assurer.
 
 Emitted when reconstruction of a bundle from shards received from assurers begins.
 
-    Event ID (TODO, should reference auditing event)
+    Event ID (ID of the corresponding "auditing report" event)
     bool (Is this a trivial reconstruction, using only original-data shards?)
 
 ### 147: Bundle reconstructed
 
 Emitted once a bundle has been successfully reconstructed from shards.
 
-    Event ID (TODO, should reference auditing event)
+    Event ID (ID of the corresponding "auditing report" event)
 
 ### 148: Sending bundle request
 
 Emitted when an auditor begins sending a bundle request to a guarantor (CE 147).
 
-    Event ID (TODO, should reference auditing event)
+    Event ID (ID of the corresponding "auditing report" event)
     Peer ID (Guarantor)
 
 ### 149: Receiving bundle request
@@ -1200,7 +1224,269 @@ another service may have stopped requesting it. In this case, either reason may 
 
 ## Auditing events
 
-TODO.
+These events concern the auditing of work-reports. Note that the bundle recovery events (140-153)
+are also emitted as part of auditing, and reference the "auditing report" event for the report being
+audited.
+
+### 200: Available reports listed
+
+Emitted once the node has determined the set of work-reports that became available in a block, and
+which therefore need auditing.
+
+    Header Hash (Block in which the reports became available)
+    u16 (Number of reports available for auditing)
+
+### 201: Available report listing failed
+
+Emitted when the node fails to determine the set of work-reports available for auditing in a block.
+No reports from the block are audited in this case.
+
+    Header Hash
+    Reason
+
+### 202: Report approved
+
+Emitted once the node has audit checked and approved a report, or seen positive judgements from more
+than one third of the validators. The latter case should only be emitted if the node has not audit
+checked the report, since a node's own check result always takes precedence over peers' votes.
+
+    Work-Report Hash
+    u16 (Number of positive judgements seen)
+
+### 203: Block audited
+
+Emitted when the node considers every report in a block to be audited, and so is willing to vote for
+the block in finality.
+
+    Header Hash
+
+### 204: Report forgotten
+
+Emitted when the node stops tracking a work-report for auditing purposes.
+
+    Work-Report Hash
+    Reason
+
+### 205: Block forgotten
+
+Emitted when the node stops tracking a block for auditing purposes. The totals below are the final
+figures for the block, and include the announcements and judgements received since the last
+"announcements received" and "judgements received" events.
+
+    Header Hash
+    Reason
+    u32 (Total audit announcements received for the block)
+    u32 (Total judgements received for reports in the block)
+
+### 210: Sending work-report request
+
+Emitted when an auditor begins sending a work-report request to another auditor (CE 136).
+
+    Peer ID (Recipient)
+    Work-Report Hash
+
+### 211: Receiving work-report request
+
+Emitted by the recipient when an auditor begins sending a work-report request (CE 136).
+
+    Peer ID (Sender)
+
+### 212: Work-report request failed
+
+Emitted when a work-report request fails (CE 136). This should be emitted by both sides, ie the
+requesting and the responding auditor.
+
+    Event ID (ID of the corresponding "sending work-report request" or "receiving work-report request" event)
+    Reason
+
+### 213: Work-report request sent
+
+Emitted once a work-report request has been sent to another auditor (CE 136). This should be emitted
+after the initial message containing the request details has been transmitted.
+
+    Event ID (ID of the corresponding "sending work-report request" event)
+
+### 214: Work-report request received
+
+Emitted once a work-report request has been received from another auditor (CE 136).
+
+    Event ID (ID of the corresponding "receiving work-report request" event)
+    Work-Report Hash
+
+### 215: Work-report transferred
+
+Emitted when a work-report has been fully sent to or received from another auditor (CE 136). This
+should be emitted by both sides.
+
+In the case of a received work-report, this event may be emitted before any checks are performed. If
+the report is found to be invalid or to not match the request, a "peer misbehaved" event should be
+emitted.
+
+    Event ID (ID of the corresponding "sending work-report request" or "receiving work-report request" event)
+    Work-Report Outline
+
+### 220: Distributing announcement
+
+Emitted when the node begins distributing an audit announcement to the other validators (CE 144).
+
+    Audit Announcement Outline
+
+### 221: Announcement send failed
+
+Emitted when the node fails to send an audit announcement to another validator (CE 144).
+
+    Event ID (ID of the corresponding "distributing announcement" event)
+    Peer ID (Recipient)
+    Reason
+
+### 222: Announcement distributed
+
+Emitted once the node has finished distributing an audit announcement. No event is emitted for the
+individual recipients on success; the recipients that the announcement could not be sent to are
+given by the "announcement send failed" events.
+
+    Event ID (ID of the corresponding "distributing announcement" event)
+    u16 (Number of validators the announcement was sent to)
+
+### 223: Announcement receive failed
+
+Emitted when the node fails to receive an audit announcement from a peer (CE 144).
+
+    Peer ID (Sender)
+    Reason
+
+### 224: Announcements received
+
+Emitted each time the total number of audit announcements received for a block (CE 144) passes a
+multiple of 100. Each announcement counts as one, regardless of the number of cores it covers.
+Announcements are counted as they are received, before they are checked for validity. Individual
+announcements are not reported, as with a large validator set they would dominate the event stream.
+
+The final total for a block is given by the "block forgotten" event.
+
+    Header Hash (Block the announcements are for)
+    u32 (Total announcements received for the block)
+
+### 230: Audit tranches assigned
+
+Emitted once the node has determined, for each core, the tranche in which it is assigned to audit
+that core's report for a block. This should be emitted once per block.
+
+    Header Hash (Block being audited)
+    [Tranche; C] (Assigned tranche for each core; C is the total number of cores)
+
+### 231: Initial tranche selected
+
+Emitted once the node has determined which reports it must audit in tranche 0 for a block. Cores
+with no available report are not included, so the length of the list is the number of non-empty
+reports selected.
+
+    Header Hash (Block being audited)
+    len++[Core Index ++ Work-Report Hash] (Reports selected for auditing)
+
+### 232: Later tranche required
+
+Emitted when the node determines that it must audit a report in a later tranche, because validators
+that announced the report did not publish judgements for it in time.
+
+    Work-Report Hash
+    Tranche (Tranche in which the node will audit the report)
+    Validator Index (the validator that no-showed)
+
+### 233: Auditing report
+
+Emitted when the node begins auditing a report, before recovery of the work-package bundle begins.
+
+    Header Hash (Block being audited)
+    Work-Report Hash
+
+### 234: Audit check completed
+
+Emitted once an audit check has completed, ie the work-report has been recomputed and its results
+compared with those in the report being audited.
+
+    Event ID (ID of the corresponding "auditing report" event)
+    bool (Audit-check result, ie is the report valid?)
+
+### 235: Audit check failed
+
+Emitted when an audit check cannot be completed, for example because the work-package bundle could
+not be recovered. No judgement is created in this case.
+
+    Event ID (ID of the corresponding "auditing report" event)
+    Reason
+
+### 236: Dispute started
+
+Emitted when the node receives a negative judgement that triggers a new dispute.
+
+    Work-Report Hash
+    Peer Id (Signer of the judgement that triggered the dispute)
+
+### 237: Dispute data pruned
+
+Emitted when the node discards the judgements and any other data it was keeping for a dispute.
+This presupposes that the dispute's result has been determined and its state included in a
+finalized chain block.
+
+    Work-Report Hash
+
+### 240: Judgement created
+
+Emitted once the node has built and signed its own judgement for a report, before it begins
+distributing it. The report and the judged validity are given by the referenced event.
+
+    Event ID (ID of the corresponding "audit check completed" event)
+
+### 241: Distributing judgement
+
+Emitted when the node begins distributing its own judgement to the other validators (CE 145).
+
+    Event ID (ID of the corresponding "judgement created" event)
+
+### 242: Judgement send failed
+
+Emitted when the node fails to send a judgement to another validator (CE 145).
+
+    Event ID (ID of the corresponding "distributing judgement" event)
+    Peer ID (Recipient)
+    Reason
+
+### 243: Judgement distributed
+
+Emitted once the node has finished distributing a judgement. No event is emitted for the individual
+recipients on success; the recipients that the judgement could not be sent to are given by the
+"judgement send failed" events.
+
+    Event ID (ID of the corresponding "distributing judgement" event)
+    u16 (Number of validators the judgement was sent to)
+
+### 244: Judgement receive failed
+
+Emitted when the node fails to receive a judgement from a peer (CE 145).
+
+    Peer ID (Sender)
+    Reason
+
+### 245: Judgements received
+
+Emitted each time the total number of judgements received for the reports in a block (CE 145) passes
+a multiple of 100, on the same basis as the "announcements received" event. Judgements for reports
+the node is not tracking are not counted; they are reported by the "judgement for unknown report"
+event. Note that the judgements collected for a particular report are reported by the "report
+approved" and "dispute started" events.
+
+    Header Hash (Block containing the reports the judgements are for)
+    u32 (Total judgements received for reports in the block)
+
+### 246: Judgement for unknown report
+
+Emitted when a judgement received from a peer refers to a work-report that the node is not tracking
+for auditing (CE 145).
+
+    Peer ID (Sender)
+    Validator Index (Judge)
+    Work-Report Hash
 
 ## Finality events
 
