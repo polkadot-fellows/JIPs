@@ -42,10 +42,12 @@ document uses the following terms for the state trie:
 
 This document uses the following terms for proofs:
 
-- An _entry_ is a (key, value) pair of the state: a key that is in the state, with its value.
-- An _absent key_ is a key that is not in the state. An absent key has no entry.
 - The _proven keys_ are the keys that a verifier checks against a proof, unique and ascending.
-  Each proven key is given either with its value, as an entry, or as an absent key.
+  Each proven key is either an entry or an absent key.
+- An _entry_ is a proven key given with a value: a (key, value) pair that the verifier checks is
+  in the state.
+- An _absent key_ is a proven key given without a value: a key that the verifier checks is not in
+  the state. An absent key is not an entry.
 
 The prover holds the state and builds the proof. The proof never carries the key or the value of
 an entry.
