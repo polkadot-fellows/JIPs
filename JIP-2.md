@@ -208,7 +208,7 @@ when the value changes.
 Chain Subscription Update. The `"value"` member is Null when there is no value under the given
 key, otherwise a Blob containing the value.
 
-### `stateProof(header_hash, keys, size_limit)`
+### `stateValuesWithProof(header_hash, keys, size_limit)`
 Returns the values of the given keys in the posterior state of the block with the given header
 hash, with a State Proof of them. The proof is as defined in [JIP-6](./JIP-6.md); the server
 builds it for the keys as described in its Appendix A, with no ranges.
