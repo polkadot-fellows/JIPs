@@ -204,7 +204,7 @@ state root:
     loop:
         tag = next tag
         match tag:
-            B: push an empty slot; append 0 to path; continue
+            B: check rule 3 on path; push an empty slot; append 0 to path; continue
             H: hash = next item
             K: S = the entries whose keys lie under path
                hash = rebuild of S at depth (length of path)
