@@ -319,8 +319,9 @@ The following consequences hold:
 A verifier that made a query gives verification its listed keys as proven keys, each with the value
 it received or as an absent key. Verification then proves each listed key as given, or fails.
 
-For a range, the verifier also gives verification the entries it received for the range, and must
-check the partial tree:
+For a range, the verifier first checks that every entry it received for the range lies within the
+range. It then merges these entries with the listed keys, in key order, and gives verification the
+result as the proven keys. It must also check the partial tree:
 
 - no `H` stands for a node under which a key within the range lies;
 - no `R` holds a key within the range.
