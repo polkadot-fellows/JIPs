@@ -179,8 +179,7 @@ Rule 4 rejects branches that the construction rules of
   and that child is then not an `H`;
 - two `K`: construction rule 1 makes such a branch a `K` itself.
 
-These rules give every partial tree exactly one encoding. The verifier accepts any canonically
-encoded partial tree whose root hash is the state root.
+These rules give every partial tree exactly one encoding.
 
 The verifier does not check that the partial tree is the smallest one for its keys. A proof may
 open more of the trie than needed, which proves more keys, never fewer.
@@ -239,12 +238,12 @@ For an `R`, the leaf node depends on the form octet:
 - form `33`: the leaf node holds the data as the hash of the value.
 
 A proof that passes verification proves that every key is as given: each entry is in the state
-with its value, and each absent key is not in the state. An absent key whose path leaves the proof
-subtree through an `H` fails verification: the proof says nothing about the keys under an `H`.
+with its value, and each absent key is not in the state. An absent key whose path ends at an `H`
+fails verification: the proof says nothing about the keys under an `H`.
 
 A verifier may keep the partial tree after verification and decide further keys in the same way. A
 key is present if it is the key of an entry or of an `R`, absent if its path ends at a `K` or at an
-`R` holding a different key, and not proven either way if its path leaves through an `H`.
+`R` holding a different key, and not proven either way if its path ends at an `H`.
 
 ## Appendix A: Building a proof for a query
 
@@ -311,7 +310,7 @@ The following consequences hold:
   - a non-empty `K`, whose state keys are entries of other listed keys or of ranges;
   - an `R` holding a different key.
 - A subtree whose state keys all lie within ranges is a single `K`, however many keys it holds.
-- A leaf whose key lies outside every range is an `R` when a key within a range lies under it.
+- A leaf whose key is not the key of an entry is an `R` when a key within a range lies under it.
 - Two listed keys whose paths end at the same leaf need no special rule. The leaf is a `K` if its
   key is the key of an entry, and an `R` otherwise.
 
@@ -354,7 +353,8 @@ keys `000`, `100`, `110` and `111`, and of the subtrees under the paths `0` (key
     subtree 11   4edb3501f7717e134d548ba9825c4e98a8fe174ec15b2d51667d3688dca3f7e9
 
 Subtree `0` is a left child, so its hash appears with bit 7 of octet 0 cleared; its full hash
-starts with `d0`. The other hashes have that bit clear already.
+starts with `d0`. The other hashes appear in full: those of left children have that bit clear
+already, and leaf 111 is a right child.
 
 Each proof is shown in hex, followed by its version octet, `tags_len`, tags and items, separated by
 `|`. The hex is the concatenation of these components.
