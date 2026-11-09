@@ -168,8 +168,6 @@ A verifier must reject a proof of version 0 if any of the following holds:
 8. A form octet is greater than 33.
 10. The proof is shorter or longer than its version octet, `tags_len`, `tags` section and items
     require.
-12. An entry lies under no `K`.
-13. The hash of the root of the partial tree differs from the trusted state root.
 14. The octets of `tags_len` differ from the GP's serialization of the number they hold.
 
 Rule 4 rejects branches that the construction rules of
