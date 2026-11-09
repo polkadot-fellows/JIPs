@@ -80,26 +80,32 @@ It proves nothing about a key under an `H`.
 
 ## Encoding
 
-The encoded proof consists of a version octet followed by four sections, with no explicit section
-lengths:
+The encoded proof consists of a version octet, the length of the tags section, the tags section,
+and the data section:
 
 ```
-proof      = version tags hashes raw_keys raw_values
+proof      = version tags_len tags data
 version    = 0x00
+tags_len   = the number of octets of tags, as a GP natural number
 tags       = subtree, then zero bits up to the next octet boundary
 subtree    = B subtree subtree | H | K | R
-hashes     = 32 octets per H, in tag order
-raw_keys   = for each R, in tag order, the last 248 - d bits of its key, d being its depth;
-             concatenated most significant bit first, then zero bits up to the next octet boundary
-raw_values = for each R, in tag order: one form octet, then its data
+data       = for each H and R, in tag order, its item
+H item     = the 32-octet hash of the node
+R item     = key_suffix form_octet form_data
+key_suffix = the last 248 - d bits of the key, d being the depth of the R, preceded by zero bits
+             up to a whole number of octets
 ```
 
 The `version` octet identifies the encoding defined here, version 0. Later revisions of this
 document may define further versions.
 
+The `tags_len` field holds the number of octets of the `tags` section, in the GP's general natural
+number serialization. With it, the verifier finds the start of the `data` section without reading
+the tags first.
+
 The `tags` section lists the nodes of the partial tree in pre-order: a `B` is followed by the tags
 of its left subtree and then those of its right subtree. This order is called tag order, and the
-other sections follow it.
+`data` section follows it.
 
 Each tag is two bits:
 
@@ -116,18 +122,22 @@ Tags are packed from the most significant bits of each octet down. The first tag
 The `tags` section starts with one subtree open. Each `H`, `K` or `R` closes one, while each `B`
 closes one and opens two more. The section ends when none remain open.
 
-The `hashes` section holds one 32-octet hash per `H`, in tag order. If the node an `H` stands for
-is a left child, its hash is encoded as the GP's branch encoding stores it: with bit 7 of octet 0
-cleared.
+The `data` section holds one item for each `H` and each `R`, in tag order. A `B` or a `K` has no
+item. The verifier reads an item when it reads the item's tag, so it reads the tags and the data
+in a single pass.
 
-The `raw_keys` section holds, for each `R` in tag order, the last $248 - d$ bits of its key, $d$
-being the depth of the `R`. The first $d$ bits of the key are the path to the `R`, so the key is
-that path followed by these bits. The suffixes are concatenated without padding between them. The
-section is padded with zero bits to an octet boundary at its end only. With no `R`, the section is
-empty.
+The item of an `H` is the hash of the node it stands for. If the node is a left child, its hash is
+encoded as the GP's branch encoding stores it: with bit 7 of octet 0 cleared.
 
-The `raw_values` section holds, for each `R` in tag order, a form octet and then its data. The form
-octet says what the data is:
+The item of an `R` holds its key suffix, a form octet, and the form data, in this order.
+
+The key suffix of an `R` at depth $d$ holds the last $248 - d$ bits of its key. The first $d$ bits
+of the key are the path to the `R`, so the key is that path followed by these bits. The suffix
+takes $\lceil (248 - d) / 8 \rceil$ octets. Zero bits precede it to fill its first octet, so that
+its last bit is the last bit of its last octet. The suffix thus lines up with the octets of the
+key: it is octets $\lfloor d / 8 \rfloor$ to 30 of the key, with the bits of the path cleared.
+
+The form octet says what the form data is:
 
 | Form octet | Data |
 |---|---|
@@ -137,9 +147,8 @@ octet says what the data is:
 These are the two contents of a GP leaf node: the value itself when it has at most 32 octets, the
 hash of the value otherwise. Form octets from `34` to `255` are invalid.
 
-The section lengths follow from the tags. The `hashes` section holds 32 octets per `H`. The
-`raw_keys` section holds $\lceil \sum (248 - d) / 8 \rceil$ octets, the sum running over the `R`
-tags. The `raw_values` section takes the rest of the proof, and its form octets delimit it.
+The `data` section has no length of its own. The size of each item follows from its tag, the
+depth of the tag and, for an `R`, the form octet. The section ends where the proof ends.
 
 ## Canonical form
 
@@ -149,7 +158,8 @@ proof.
 
 A verifier must reject a proof of version 0 if any of the following holds:
 
-1. The proof is empty, or the `tags` section ends before the partial tree is complete.
+1. The `tags` section ends before the partial tree is complete, or a whole octet of it follows the
+   last tag.
 2. A padding bit of the `tags` section is set.
 3. A `B` is at depth 248 or deeper.
 4. A `B` has one of these pairs of children, in either order:
@@ -158,14 +168,15 @@ A verifier must reject a proof of version 0 if any of the following holds:
    - a `K` under which no entry lies, and an `R`.
 5. An `H` carries the zero hash.
 6. An `H` that is a left child has bit 7 of octet 0 of its hash set.
-7. A padding bit of the `raw_keys` section is set.
+7. A padding bit of a key suffix is set.
 8. A form octet is greater than 33.
 9. The key of an `R` is the key of an entry.
-10. A section is shorter than its contents require, or octets remain after the data of the last
-    `R`.
+10. The proof is shorter or longer than its version octet, `tags_len`, `tags` section and items
+    require.
 11. The verifier's entries are not in strictly ascending order of key.
 12. An entry lies under no `K`.
 13. The hash of the root of the partial tree differs from the trusted state root.
+14. The octets of `tags_len` differ from the GP's serialization of the number they hold.
 
 Rule 4 rejects branches that the construction rules of
 [Appendix A](#appendix-a-building-a-proof-for-a-query) never produce:
@@ -204,12 +215,12 @@ state root:
         tag = next tag
         match tag:
             B: push an empty slot; append 0 to path; continue
-            H: hash = next hash
+            H: hash = next item
             K: S = the entries whose keys lie under path
                hash = rebuild of S at depth (length of path)
                the entries of S are consumed
-            R: key = path followed by the next 248 - (length of path) bits of raw_keys
-               (form, data) = next form octet and its data from raw_values
+            R: (key suffix, form, data) = next item
+               key = path followed by the last 248 - (length of path) bits of key suffix
                hash = hash of the leaf node of key and data
                key is present
         loop:
@@ -222,7 +233,7 @@ state root:
             hash = hash of the branch node with children left hash and hash; tag = B
     require every entry is consumed
     require the path of every absent key ends at a K, or at an R holding a different key
-    require every section is consumed exactly
+    require no octets remain after the last item
 
 The pseudo-code omits the other canonical-form rules, which are checked as each tag, hash, key and
 value is read.
@@ -336,7 +347,7 @@ and `111`. Octet 0 of each key is those three bits followed by `11010`, and octe
 nine octets of the ASCII string `value ` followed by the key's three bits, e.g. `value 110`. The
 state root is `9b9760b1a0bbb685177ad5ddd98b1ae446307255aca511c22e4c2e778cec425f`.
 
-The hashes used below, as they appear in the `hashes` section, are those of the leaves holding
+The hashes used below, as they appear in the `data` section, are those of the leaves holding
 keys `000`, `100`, `110` and `111`, and of the subtrees under the paths `0` (keys `000` and `001`),
 `00` (the same two keys) and `11` (keys `110` and `111`):
 
@@ -351,22 +362,22 @@ keys `000`, `100`, `110` and `111`, and of the subtrees under the paths `0` (key
 Subtree `0` is a left child, so its hash appears with bit 7 of octet 0 cleared; its full hash
 starts with `d0`. The other hashes have that bit clear already.
 
-Each proof is shown in hex, followed by its version octet, tags, hashes, raw keys and raw values,
-separated by `|`. The hex is the concatenation of these components.
+Each proof is shown in hex, followed by its version octet, `tags_len`, tags and items, separated by
+`|`. The hex is the concatenation of these components.
 
 1. Listed key `110`. Entries: `110`. Tags `B H B H B K H`. Hashes: subtree 0, leaf 100, leaf 111.
    No raw leaves.
 
-       00112450918ec4ad4465ee3baa8a272129bd2534ad911f63d22abff4716baa78bc97c36b177808b75d08e8e68fc330d42ebdda1eadbd804db18d1e4679cbcb349c52df883a0c1f05cbac875dae2e53c5c15dfad106d7272bf3cb07015aae7e8656f7f9
+       0002112450918ec4ad4465ee3baa8a272129bd2534ad911f63d22abff4716baa78bc97c36b177808b75d08e8e68fc330d42ebdda1eadbd804db18d1e4679cbcb349c52df883a0c1f05cbac875dae2e53c5c15dfad106d7272bf3cb07015aae7e8656f7f9
 
-   `00` | `1124` = 7 tags and 2 padding bits | subtree 0, leaf 100, leaf 111 | none | none
+   `00` | `02` | `1124` = 7 tags and 2 padding bits | subtree 0, leaf 100, leaf 111
 
 2. Listed keys `001` and `111`. Entries: `001`, `111`. Tags `B B B H K K B H B H K`. Hashes: leaf
    000, leaf 100, leaf 110. No raw leaves.
 
-       0001a11840f3854ff47a42a159d21e8275e15df4937d19063426e38cfdc30878dbc22ea66b177808b75d08e8e68fc330d42ebdda1eadbd804db18d1e4679cbcb349c52df2af306b851cf153d7c58cf43682fed3b75f2cdd7dfc9a547dcfe990ccaea77ab
+       000301a11840f3854ff47a42a159d21e8275e15df4937d19063426e38cfdc30878dbc22ea66b177808b75d08e8e68fc330d42ebdda1eadbd804db18d1e4679cbcb349c52df2af306b851cf153d7c58cf43682fed3b75f2cdd7dfc9a547dcfe990ccaea77ab
 
-   `00` | `01a118` = 11 tags and 2 padding bits | leaf 000, leaf 100, leaf 110 | none | none
+   `00` | `03` | `01a118` = 11 tags and 2 padding bits | leaf 000, leaf 100, leaf 110
 
    The `K` at path `001` rebuilds to the leaf of `001`, and the `K` at path `01` is an empty
    subtree.
@@ -374,17 +385,17 @@ separated by `|`. The hex is the concatenation of these components.
 3. Range `[001, 110]`, both bounds being full keys. Entries: `001`, `100`, `110`. Tags
    `B B B H K K B K B K H`. Hashes: leaf 000, leaf 111. No raw leaves.
 
-       0001a22440f3854ff47a42a159d21e8275e15df4937d19063426e38cfdc30878dbc22ea6883a0c1f05cbac875dae2e53c5c15dfad106d7272bf3cb07015aae7e8656f7f9
+       000301a22440f3854ff47a42a159d21e8275e15df4937d19063426e38cfdc30878dbc22ea6883a0c1f05cbac875dae2e53c5c15dfad106d7272bf3cb07015aae7e8656f7f9
 
-   `00` | `01a224` = 11 tags and 2 padding bits | leaf 000, leaf 111 | none | none
+   `00` | `03` | `01a224` = 11 tags and 2 padding bits | leaf 000, leaf 111
 
 4. Range `[100, 111]`, both bounds being full keys. Its state keys, `100`, `110` and `111`, are
    exactly the keys under path `1`. Entries: `100`, `110`, `111`. Tags `B H K`. Hashes: subtree 0.
    No raw leaves.
 
-       001850918ec4ad4465ee3baa8a272129bd2534ad911f63d22abff4716baa78bc97c3
+       00011850918ec4ad4465ee3baa8a272129bd2534ad911f63d22abff4716baa78bc97c3
 
-   `00` | `18` = 3 tags and 2 padding bits | subtree 0 | none | none
+   `00` | `01` | `18` = 3 tags and 2 padding bits | subtree 0
 
    The whole subtree under path `1` is a single `K`. The proof would stay this size for any number
    of keys under that path.
@@ -392,10 +403,11 @@ separated by `|`. The hex is the concatenation of these components.
 5. Listed keys `010` and `101`, both absent. No entries. Tags `B B H K B R H`. Hashes: subtree 00,
    subtree 11. Raw leaf: key `100` at depth 2, value `value 100`.
 
-       00063441dd8fddabce96f7a9e0b737297a41b55924bb4e5e7c7e2f0772ef948a60debd4edb3501f7717e134d548ba9825c4e98a8fe174ec15b2d51667d3688dca3f7e9696969696969696969696969696969696969696969696969696969696969680976616c756520313030
+       0002063441dd8fddabce96f7a9e0b737297a41b55924bb4e5e7c7e2f0772ef948a60debd1a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a0976616c7565203130304edb3501f7717e134d548ba9825c4e98a8fe174ec15b2d51667d3688dca3f7e9
 
-   `00` | `0634` = 7 tags and 2 padding bits | subtree 00, subtree 11 | key `100` minus its first 2
-   bits: 246 bits and 2 padding bits = 31 octets | `09` `value 100`
+   `00` | `02` | `0634` = 7 tags and 2 padding bits | subtree 00 | raw leaf: key suffix of 2 padding
+   bits and the last 246 bits of key `100` = 31 octets starting `1a`, form `09`, `value 100` |
+   subtree 11
 
    Key `010` is absent because its path ends at the empty `K` at path `01`. Key `101` is absent
    because its path ends at the `R` at path `10`, which holds key `100`.
@@ -403,22 +415,22 @@ separated by `|`. The hex is the concatenation of these components.
 6. The empty state, any query. No entries. Tags `K`. No hashes. No raw leaves. The state root is
    the zero hash.
 
-       0080
+       000180
 
-   `00` | `80` = 1 tag and 6 padding bits | none | none | none
+   `00` | `01` | `80` = 1 tag and 6 padding bits | no items
 
 7. The five-key state, a query with no listed keys and no ranges. No entries. Tags `H`. Hashes: the
    state root. No raw leaves.
 
-       00409b9760b1a0bbb685177ad5ddd98b1ae446307255aca511c22e4c2e778cec425f
+       0001409b9760b1a0bbb685177ad5ddd98b1ae446307255aca511c22e4c2e778cec425f
 
-   `00` | `40` = 1 tag and 6 padding bits | the state root | none | none
+   `00` | `01` | `40` = 1 tag and 6 padding bits | the state root
 
 8. A state holding only key `110`, listed key `110`. Entries: `110`. Tags `K`. No hashes. No raw
    leaves. The state root is the hash of leaf 110.
 
-       0080
+       000180
 
-   `00` | `80` = 1 tag and 6 padding bits | none | none | none
+   `00` | `01` | `80` = 1 tag and 6 padding bits | no items
 
    This proof is the same as in vector 6. The entries and the state root differ.
