@@ -168,7 +168,6 @@ A verifier must reject a proof of version 0 if any of the following holds:
 8. A form octet is greater than 33.
 10. The proof is shorter or longer than its version octet, `tags_len`, `tags` section and items
     require.
-11. The verifier's entries are not in strictly ascending order of key.
 12. An entry lies under no `K`.
 13. The hash of the root of the partial tree differs from the trusted state root.
 14. The octets of `tags_len` differ from the GP's serialization of the number they hold.
@@ -231,8 +230,8 @@ state root:
 The pseudo-code omits the other canonical-form rules, which are checked as each tag, hash, key and
 value is read.
 
-For a `K`, the entries whose keys lie under the path form a contiguous part of the ascending
-entries, so the verifier can take them in order.
+The verifier consumes the entries in key order: the entries under each `K` are the next entries of
+the proven keys, so the verifier can take them from the front of the list.
 
 For an `R`, the leaf node depends on the form octet:
 
