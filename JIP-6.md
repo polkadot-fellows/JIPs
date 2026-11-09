@@ -161,10 +161,7 @@ A verifier must reject a proof of version 0 if any of the following holds:
 1. `tags_len` is not the number of octets that the tags take, padding included.
 2. A padding bit of the `tags` section is set.
 3. A `B` is at depth 248 or deeper.
-4. A `B` has one of these pairs of children, in either order:
-   - two `H`;
-   - two `K`;
-   - a `K` under which no entry lies, and an `R`.
+4. A `B` has two `H` children, or two `K` children.
 5. An `H` carries the zero hash.
 6. An `H` that is a left child has bit 7 of octet 0 of its hash set.
 7. A padding bit of a key suffix is set.
@@ -182,9 +179,7 @@ Rule 4 rejects branches that the construction rules of
 
 - two `H`: construction rule 3 opens a branch only for a key that lies under one of its children,
   and that child is then not an `H`;
-- two `K`: construction rule 2 makes such a branch a `K` itself;
-- an empty `K` and an `R`: the state trie has no such branch, because a node with one key under it
-  is a leaf.
+- two `K`: construction rule 2 makes such a branch a `K` itself.
 
 These rules give every partial tree exactly one encoding. The verifier accepts any canonically
 encoded partial tree whose root hash is the state root.
