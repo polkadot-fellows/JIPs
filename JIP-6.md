@@ -63,8 +63,7 @@ other node in it, the node's parent. Each node of a partial tree has one of four
 |---|---|---|---|
 | `B` | expanded branch | a branch whose two children are in the partial tree | nothing |
 | `H` | hashed subtree | a non-empty subtree that is not opened | its hash |
-| `K` | known subtree | a subtree that is not opened, under which every state key is the key of an
-entry | nothing |
+| `K` | known subtree | a subtree that is not opened, under which every state key is the key of an entry | nothing |
 | `R` | raw leaf | a leaf whose key is not the key of an entry | key suffix; value or value hash |
 
 A `K` under which no state key lies is an empty subtree. The verifier computes the hash of a `K` by
