@@ -52,7 +52,7 @@ For convenience the following common types are defined:
   data must be exactly 31 bytes in length: a raw state key, as defined by the state Merklization
   appendix of the GP.
 - State Proof: A Blob, containing a compact Merkle proof of part of the state of some block. The
-  decoded data is the proof as defined in [JIP-6](./JIP-6.md). The requested keys and their values
+  decoded data is the proof as defined in [JIP-6](./JIP-6.md). The proven keys and their values
   are not part of it; they are returned beside it.
 
 ## Error codes
@@ -233,7 +233,7 @@ would make the reply exceed the server's response size cap.
 #### Result
 An Object with the following members:
 - `"proof"`: State Proof.
-- `"values"`: Array of `Blob or Null`: One member per covered key, in the order of `keys`: the
+- `"values"`: Array, each element Blob or Null: One member per covered key, in the order of `keys`: the
   value under the key, or Null if the key is absent. The array is shorter than `keys` if the size
   limit cut the reply: an array of `n` members covers the first `n` keys. The array is empty only
   if `keys` is.

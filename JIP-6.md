@@ -209,7 +209,7 @@ state root:
         tag = next tag
         match tag:
             B: push an empty slot; append 0 to path; continue
-            H: hash = next hash; path is not covered
+            H: hash = next hash
             K: S = the entries whose keys lie under path
                hash = rebuild of S at depth (length of path)
                the entries of S are consumed
@@ -252,7 +252,7 @@ key is present if it is the key of an entry or of an `R`, absent if its path end
 
 This appendix is informative. It gives one way to build the proof of a query, the one the test
 vectors use, and the checks a verifier makes that a proof covers its query. A prover may build a
-proof in any other way, as long as the verifier accepts it.
+proof in any other way, as long as the verifier defined above accepts it.
 
 A query consists of:
 
