@@ -46,10 +46,6 @@ This document uses the following terms for proofs:
 - An _absent key_ is a key that is not in the state. An absent key has no entry.
 - The _proven keys_ are the keys that a verifier checks against a proof, unique and ascending.
   Each proven key is given either with its value, as an entry, or as an absent key.
-- The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
-- A _query_ is what a verifier asks a prover to prove: a set of keys and key ranges that the proof
-  must cover. How a prover builds the proof of a query is given in
-  [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
 The prover holds the state and builds the proof. The proof never carries the key or the value of
 an entry.
@@ -254,7 +250,7 @@ This appendix is informative. It gives one way to build the proof of a query, th
 vectors use, and the checks a verifier makes that a proof covers its query. A prover may build a
 proof in any other way, as long as the verifier defined above accepts it.
 
-A query consists of:
+A _query_ is what a verifier asks a prover to prove. It consists of:
 
 - Listed keys: a strictly ascending sequence of state keys.
 - Ranges: a sequence of pairs `[start, end]` of prefix bounds, each bound 0 to 31 octets long.
@@ -272,11 +268,14 @@ This construction requires a query to satisfy the following, with bounds compare
 
 A query that violates these constraints is not valid for this construction.
 
-The entries of a query are the pairs of the state whose key is a listed key or lies within a range.
-The prover builds the proof subtree of the query with the rules under [Construction](#construction);
-its claims then include the presence of every entry, the absence of every listed key that is not in
-the state, and the contents of every range: every state key within a range is an entry, and no
-other key within the range is in the state.
+The entries of a query are the pairs of the state whose key is a listed key or lies within a
+range. The prover builds the proof subtree of the query with the rules under
+[Construction](#construction). Together with the entries, the proof then proves:
+
+- the presence of every entry;
+- the absence of every listed key that is not in the state;
+- the contents of every range: every state key within a range is an entry, and no other key
+  within the range is in the state.
 
 ### Construction
 
