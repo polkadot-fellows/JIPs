@@ -173,9 +173,9 @@ A verifier must reject a proof of version 0 if any of the following holds:
 Rule 4 rejects branches that the construction rules of
 [Appendix A](#appendix-a-building-a-proof-for-a-query) never produce:
 
-- two `H`: construction rule 3 opens a branch only for a key that lies under one of its children,
+- two `H`: construction rule 2 opens a branch only for a key that lies under one of its children,
   and that child is then not an `H`;
-- two `K`: construction rule 2 makes such a branch a `K` itself.
+- two `K`: construction rule 1 makes such a branch a `K` itself.
 
 These rules give every partial tree exactly one encoding. The verifier accepts any canonically
 encoded partial tree whose root hash is the state root.
@@ -285,14 +285,14 @@ opens a branch into both children only when a listed key or a key within a range
 Every other node it reaches gets a single tag, `K`, `R` or `H`, and is not opened further. For each
 node, the first of the following rules that applies gives the tag:
 
-1. If no state key lies under the node, the tag is `K`.
-2. If every state key under the node is the key of an entry, the tag is `K`.
-3. If a listed key lies under the node, or a key within a range lies under the node:
+1. If every state key under the node is the key of an entry, the tag is `K`. This includes a node
+   under which no state key lies.
+2. If a listed key lies under the node, or a key within a range lies under the node:
    - if the node is a leaf, the tag is `R`;
    - if the node is a branch, the tag is `B`, and the prover applies these rules to both children.
-4. Otherwise, the tag is `H`.
+3. Otherwise, the tag is `H`.
 
-Rule 3 tests keys of the whole key space: a listed key or a key within a range counts whether or
+Rule 2 tests keys of the whole key space: a listed key or a key within a range counts whether or
 not it is in the state.
 
 The following consequences hold:
