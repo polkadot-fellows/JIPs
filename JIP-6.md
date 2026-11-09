@@ -247,8 +247,9 @@ key is present if it is the key of an entry or of an `R`, absent if its path end
 ## Appendix A: Building a proof for a query
 
 This appendix is informative. It gives one way to build the proof of a query, the one the test
-vectors use, and the checks a verifier makes that a proof covers its query. A prover may build a
-proof in any other way, as long as the verifier defined above accepts it.
+vectors use. Section [Checking a proof against the query](#checking-a-proof-against-the-query)
+shows how a verifier that made a query checks the proof against it. A prover may build a proof in
+any other way, as long as the verifier defined above accepts it.
 
 A _query_ is what a verifier asks a prover to prove. It consists of:
 
@@ -314,10 +315,11 @@ The following consequences hold:
 
 ### Checking a proof against the query
 
-A verifier that made a query gives verification its listed keys, each with the value it received
-or marked absent. Verification then proves each listed key as given, or fails.
+A verifier that made a query gives verification its listed keys as proven keys, each with the value
+it received or as an absent key. Verification then proves each listed key as given, or fails.
 
-For a range, the verifier must also check the partial tree:
+For a range, the verifier also gives verification the entries it received for the range, and must
+check the partial tree:
 
 - no `H` stands for a node under which a key within the range lies;
 - no `R` holds a key within the range.
