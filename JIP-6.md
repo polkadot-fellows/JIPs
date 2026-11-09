@@ -54,14 +54,14 @@ The verifier holds a trusted state root. It checks the proven keys against that 
 proof, as defined under [Verification](#verification). This document defines the proven keys as
 an input of the verifier, not how they are encoded or where the verifier gets them.
 
-## Proof subtree
+## Partial tree
 
-A proof subtree is a part of the state trie that contains the root of the state trie and, for every
-other node in it, the node's parent. Each node of a proof subtree has one of four tags:
+A partial tree is a part of the state trie that contains the root of the state trie and, for every
+other node in it, the node's parent. Each node of a partial tree has one of four tags:
 
 | Tag | Name | Meaning | The proof ships |
 |---|---|---|---|
-| `B` | expanded branch | a branch whose two children are in the proof subtree | nothing |
+| `B` | expanded branch | a branch whose two children are in the partial tree | nothing |
 | `H` | hashed subtree | a non-empty subtree that is not opened | its hash |
 | `K` | known subtree | a subtree that is not opened, under which every state key is the key of an
 entry | nothing |
@@ -70,7 +70,7 @@ entry | nothing |
 A `K` under which no state key lies is an empty subtree. The verifier computes the hash of a `K` by
 rebuilding it from the entries under it.
 
-Together with the entries, a proof subtree proves that:
+Together with the entries, a partial tree proves that:
 
 - every entry is in the state: its key is present and holds its value;
 - the key of every `R` is present and holds its value, or a value with the shipped hash;
@@ -98,7 +98,7 @@ raw_values = for each R, in tag order: one form octet, then its data
 The `version` octet identifies the encoding defined here, version 0. Later revisions of this
 document may define further versions.
 
-The `tags` section lists the nodes of the proof subtree in pre-order: a `B` is followed by the tags
+The `tags` section lists the nodes of the partial tree in pre-order: a `B` is followed by the tags
 of its left subtree and then those of its right subtree. This order is called tag order, and the
 other sections follow it.
 
@@ -150,7 +150,7 @@ proof.
 
 A verifier must reject a proof of version 0 if any of the following holds:
 
-1. The proof is empty, or the `tags` section ends before the subtree is complete.
+1. The proof is empty, or the `tags` section ends before the partial tree is complete.
 2. A padding bit of the `tags` section is set.
 3. A `B` is at depth 248 or deeper.
 4. A `B` has one of these pairs of children, in either order:
@@ -166,7 +166,7 @@ A verifier must reject a proof of version 0 if any of the following holds:
     `R`.
 11. The verifier's entries are not in strictly ascending order of key.
 12. An entry lies under no `K`.
-13. The hash of the root of the proof subtree differs from the trusted state root.
+13. The hash of the root of the partial tree differs from the trusted state root.
 
 Rule 4 rejects branches that the construction rules of
 [Appendix A](#appendix-a-building-a-proof-for-a-query) never produce:
@@ -177,10 +177,10 @@ Rule 4 rejects branches that the construction rules of
 - an empty `K` and an `R`: the state trie has no such branch, because a node with one key under it
   is a leaf.
 
-These rules give every proof subtree exactly one encoding. The verifier accepts any canonically
-encoded proof subtree whose root hash is the state root.
+These rules give every partial tree exactly one encoding. The verifier accepts any canonically
+encoded partial tree whose root hash is the state root.
 
-The verifier does not check that the proof subtree is the smallest one for its keys. A proof may
+The verifier does not check that the partial tree is the smallest one for its keys. A proof may
 open more of the trie than needed, which proves more keys, never fewer.
 
 A verifier may bound the size of the proofs it accepts.
@@ -197,7 +197,7 @@ completes and the top slot is empty, the node is a left child. Its tag and hash 
 slot, and the right child is read next. When a node completes and the top slot already holds a left
 child, the node is the right child. The branch's hash is computed from the two, the slot is popped,
 and the branch is itself a completed node, to be handled the same way by the slot below. The proof
-is valid when the final completed node is the root of the proof subtree and its hash equals the
+is valid when the final completed node is the root of the partial tree and its hash equals the
 state root:
 
     stack = empty, path = empty
@@ -240,7 +240,7 @@ A proof that passes verification proves that every key is as given: each entry i
 with its value, and each absent key is not in the state. An absent key whose path leaves the proof
 subtree through an `H` fails verification: the proof says nothing about the keys under an `H`.
 
-A verifier may keep the proof subtree after verification and decide further keys in the same way. A
+A verifier may keep the partial tree after verification and decide further keys in the same way. A
 key is present if it is the key of an entry or of an `R`, absent if its path ends at a `K` or at an
 `R` holding a different key, and not proven either way if its path leaves through an `H`.
 
@@ -269,7 +269,7 @@ This construction requires a query to satisfy the following, with bounds compare
 A query that violates these constraints is not valid for this construction.
 
 The entries of a query are the pairs of the state whose key is a listed key or lies within a
-range. The prover builds the proof subtree of the query with the rules under
+range. The prover builds the partial tree of the query with the rules under
 [Construction](#construction). Together with the entries, the proof then proves:
 
 - the presence of every entry;
@@ -279,7 +279,7 @@ range. The prover builds the proof subtree of the query with the rules under
 
 ### Construction
 
-The proof subtree follows only the paths relevant to the query. Starting at the root, the prover
+The partial tree follows only the paths relevant to the query. Starting at the root, the prover
 opens a branch into both children only when a listed key or a key within a range lies under it.
 Every other node it reaches gets a single tag, `K`, `R` or `H`, and is not opened further. For each
 node, the first of the following rules that applies gives the tag:
@@ -296,10 +296,10 @@ not it is in the state.
 
 The following consequences hold:
 
-- For an empty state, the proof subtree is a single `K`.
-- For a non-empty state and a query with no listed keys and no ranges, the proof subtree is a
+- For an empty state, the partial tree is a single `K`.
+- For a non-empty state and a query with no listed keys and no ranges, the partial tree is a
   single `H` carrying the state root.
-- For a state with one key that is the key of an entry, the proof subtree is a single `K`.
+- For a state with one key that is the key of an entry, the partial tree is a single `K`.
 - For a query of one listed key that is present, the path of the key is a chain of `B` tags that
   ends at a `K` at the key's leaf. Each sibling along the path is an `H`, or a `K` if it is empty.
   Vector 1 shows this as `B H B H B K H`.
@@ -317,7 +317,7 @@ The following consequences hold:
 A verifier that made a query gives verification its listed keys, each with the value it received
 or marked absent. Verification then proves each listed key as given, or fails.
 
-For a range, the verifier must also check the proof subtree:
+For a range, the verifier must also check the partial tree:
 
 - no `H` stands for a node under which a key within the range lies;
 - no `R` holds a key within the range.
