@@ -53,7 +53,7 @@ For convenience the following common types are defined:
   appendix of the GP.
 - State Proof: A Blob, containing a compact Merkle proof of part of the state of some block. The
   decoded data is the proof as defined in [JIP-6](./JIP-6.md). The proven keys and their values
-  are not part of it; they are returned beside it.
+  are not part of it; the values are returned beside it.
 
 ## Error codes
 
@@ -214,11 +214,13 @@ hash, with a State Proof of them. The proof is as defined in [JIP-6](./JIP-6.md)
 builds it for the keys as described in its Appendix A, with no ranges.
 
 The reply covers the first keys of `keys`, as many as the size limit allows. The size of a reply is
-the number of octets of the encoded proof plus the lengths of the values in it. The server must
+the number of octets of the encoded proof plus the lengths of the returned values. The server must
 choose the covered keys so that the size of the reply does not exceed `size_limit`, except that it
 must always cover the first key, even if the reply for it alone exceeds the limit. It may cover
-fewer keys than would fit. The proof and the values are those of the covered keys alone, and the
-requester must verify them as such. The keys not covered have to be requested again.
+fewer keys than would fit. The proof and the values are those of the covered keys alone. The
+requester must verify the proof with the covered keys as the proven keys: a key with a Blob as an
+entry with that value, and a key with Null as an absent key. The keys not covered have to be
+requested again.
 
 The server rejects the request with the JSON-RPC invalid params error if `keys` is not strictly
 ascending, or if `size_limit` is not a non-negative integer.
