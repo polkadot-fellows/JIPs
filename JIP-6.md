@@ -166,7 +166,6 @@ A verifier must reject a proof of version 0 if any of the following holds:
 6. An `H` that is a left child has bit 7 of octet 0 of its hash set.
 7. A padding bit of a key suffix is set.
 8. A form octet is greater than 33.
-9. The key of an `R` is the key of an entry.
 10. The proof is shorter or longer than its version octet, `tags_len`, `tags` section and items
     require.
 11. The verifier's entries are not in strictly ascending order of key.
