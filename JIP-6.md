@@ -215,7 +215,7 @@ state root:
                key is present
         loop:
             if stack is empty:
-                require hash = state root; done
+                require hash = state root; exit both loops
             if top of stack is empty:
                 top of stack = (tag, hash); set the last bit of path to 1; break
             (left tag, left hash) = pop stack; remove the last bit of path
