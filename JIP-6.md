@@ -42,20 +42,21 @@ document uses the following terms for the state trie:
 
 This document uses the following terms for proofs:
 
-- An _entry_ is a (key, value) pair of the state. The verifier's entries are the pairs it checks.
-  Their keys are unique and ascending.
+- An _entry_ is a (key, value) pair of the state: a key that is in the state, with its value.
+- An _absent key_ is a key that is not in the state. An absent key has no entry.
+- The _proven keys_ are the keys that a verifier checks against a proof, unique and ascending.
+  Each proven key is given either with its value, as an entry, or as an absent key.
 - The _claims_ of a proof are what it proves, as given under [Proof subtree](#proof-subtree).
 - A _query_ is what a verifier asks a prover to prove: a set of keys and key ranges that the proof
   must cover. How a prover builds the proof of a query is given in
   [Appendix A](#appendix-a-building-a-proof-for-a-query), which is informative.
 
 The prover holds the state and builds the proof. The proof never carries the key or the value of
-an entry. A key that is absent from the state has no entry; its absence follows from the proof.
+an entry.
 
-The verifier holds a trusted state root. It checks the entries, and the absence of the keys it
-expects to be absent, against that root with the proof, as defined under
-[Verification](#verification). This document defines the entries as an input of the verifier, not
-how they are encoded or where the verifier gets them.
+The verifier holds a trusted state root. It checks the proven keys against that root with the
+proof, as defined under [Verification](#verification). This document defines the proven keys as
+an input of the verifier, not how they are encoded or where the verifier gets them.
 
 ## Proof subtree
 
@@ -190,11 +191,10 @@ A verifier may bound the size of the proofs it accepts.
 
 ## Verification
 
-The verifier takes three inputs: the proof, a trusted state root, and a set of keys, unique and
-ascending, each with its value or marked absent. The keys with a value are its entries; the others
-are its absent keys. While reading the tags in order, it keeps the path to the current node and a
-stack of open branches, those whose right child is still to come. Each slot of the stack is empty
-or holds a left child's tag and hash.
+The verifier takes three inputs: the proof, a trusted state root, and the proven keys. While
+reading the tags in order, it keeps the path to the current node and a stack of open branches,
+those whose right child is still to come. Each slot of the stack is empty or holds a left child's
+tag and hash.
 
 Reading a `B` opens a branch: a slot is pushed and the left child is read next. When a node
 completes and the top slot is empty, the node is a left child. Its tag and hash are stored in the
