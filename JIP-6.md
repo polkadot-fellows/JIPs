@@ -160,7 +160,8 @@ proof.
 
 A verifier must reject a proof of version 0 if any of the following holds:
 
-1. `tags_len` is not the number of octets that the tags take, padding included.
+1. The octets of `tags_len` are not the GP's serialization of the number of octets that the tags
+   take, padding included.
 2. A padding bit of the `tags` section is set.
 3. A `B` is at depth 248 or deeper.
 4. A `B` has two `H` children, or two `K` children.
@@ -170,7 +171,6 @@ A verifier must reject a proof of version 0 if any of the following holds:
 8. A form octet is greater than 33.
 9. The proof is shorter or longer than its version octet, `tags_len`, `tags` section and items
    require.
-10. The octets of `tags_len` differ from the GP's serialization of the number they hold.
 
 Rule 4 rejects branches that the construction rules of
 [Appendix A](#appendix-a-building-a-proof-for-a-query) never produce:
@@ -209,11 +209,11 @@ state root:
             H: hash = next item
             K: S = the entries whose keys lie under path
                hash = rebuild of S at depth (length of path)
-               the entries of S are consumed
+               the entries of S are consumed; record path as a K
             R: (key suffix, form, data) = next item
                key = path followed by the last 248 - (length of path) bits of key suffix
                hash = hash of the leaf node of key and data
-               key is present
+               record path and key as an R
         loop:
             if stack is empty:
                 require hash = state root; exit both loops
@@ -223,8 +223,9 @@ state root:
             check rule 4 on (left tag, tag)
             hash = hash of the branch node with children left hash and hash; tag = B
     require every entry is consumed
-    require the path of every absent key ends at a K, or at an R holding a different key
-    require no octets remain after the last item
+    require the path of every absent key ends at a recorded K, or at a recorded R holding a
+        different key
+    check rule 9: no octets remain after the last item
 
 The pseudo-code omits the other canonical-form rules, which are checked as each tag, hash, key and
 value is read.
