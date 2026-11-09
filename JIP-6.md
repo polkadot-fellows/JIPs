@@ -158,8 +158,7 @@ proof.
 
 A verifier must reject a proof of version 0 if any of the following holds:
 
-1. The `tags` section ends before the partial tree is complete, or a whole octet of it follows the
-   last tag.
+1. `tags_len` is not the number of octets that the tags take, padding included.
 2. A padding bit of the `tags` section is set.
 3. A `B` is at depth 248 or deeper.
 4. A `B` has one of these pairs of children, in either order:
