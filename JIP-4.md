@@ -10,7 +10,7 @@ The chain specification root object includes the following keys:
 - `bootnodes` - an optional list of the nodes accepting connections. Each entry is a string in the following format: `<name>@<ip>:<port>` where `<name>` is the 53-character DNS name consisting of "e" followed by the Ed25519 public key, base-32 encoded using the alphabet "abcdefghijklmnopqrstuvwxyz234567". `<ip>` is a string containing IPv4 or IPv6 address of the node. IPv6 address may optionally be specified in square brackets (`[]`). `<port>` is an IP port number.
 - `genesis_header` - A hex string containing JAM-serialized genesis block header.
 - `genesis_state` - An object defining genesis state. Each key is a 62-character hex string defining the 31-byte state key. The values are arbitrary length hex strings.
-- `protocol_parameters` - A hex string containing JAM-serialized protocol parameters. Encoding matches protocol parameters returned by the [`fetch`](https://graypaper.fluffylabs.dev/#/07f041d/3a13013ad501?v=0.8.0) host call defined in the Gray Paper (B.6)
+- `protocol_parameters` - A hex string containing JAM-serialized protocol parameters. Encoding matches protocol parameters returned by the [`fetch`](https://graypaper.fluffylabs.dev/#/07f041d/3a13013ad501?v=0.8.0) host call defined in the Gray Paper (B.5)
 
 The example below shows a basic chain specification file. Note that this does not contain a valid header or state for brevity.
 ```json
