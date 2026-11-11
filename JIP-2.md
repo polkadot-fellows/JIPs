@@ -224,9 +224,6 @@ requested again.
 
 The server rejects the request with the JSON-RPC invalid params error if `keys` is not strictly
 ascending, or if `size_limit` is not a non-negative integer.
-
-A server may clamp `size_limit` to a maximum of its choosing. A server may also cap the number of
-keys it covers. Keys over that cap are not covered, the same as keys over the size limit.
 #### Parameters
 1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
    for the query.
@@ -237,8 +234,8 @@ An Object with the following members:
 - `"proof"`: State Proof.
 - `"values"`: Array, each element Blob or Null: One member per covered key, in the order of
   `keys`: the value under the key, or Null if the key is absent. The array is shorter than `keys`
-  if the size limit or the server's key cap cut the reply: an array of `n` members covers the first
-  `n` keys. The array is empty only if `keys` is.
+  if the reply covers fewer keys: an array of `n` members covers the first `n` keys. The array is
+  empty only if `keys` is.
 
 ### `beefyRoot(header_hash)`
 Returns the BEEFY root of the block with the given header hash.
