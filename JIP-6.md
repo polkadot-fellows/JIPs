@@ -146,8 +146,8 @@ The form octet says what the form data is:
 | `0` to `32` | the value itself, of that many octets |
 | `33` | the 32-octet hash of the value, which is longer than 32 octets |
 
-These are the two possible contents of a GP leaf node: the value itself when it has at most 32 octets, the
-hash of the value otherwise. Form octets from `34` to `255` are invalid.
+These are the two possible contents of a GP leaf node: the value itself when it has at most 32
+octets, the hash of the value otherwise. Form octets from `34` to `255` are invalid.
 
 The `data` section has no length of its own. The size of each item follows from its tag and,
 for an `R`, the depth of the tag and the form octet. The section ends where the proof ends.
