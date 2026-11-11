@@ -121,7 +121,6 @@ Object with the following members, all Numbers:
 - `"max_tickets_per_block"`: $\mathsf{K}$, the maximum number of tickets which may be submitted in
   a single extrinsic.
 - `"max_lookup_anchor_age"`: $\mathsf{L}$, the maximum age in timeslots of the lookup anchor.
-- `"tickets_attempts_number"`: $\mathsf{N}$, the number of ticket entries per validator.
 - `"auth_window"`: $\mathsf{O}$, the maximum number of items in the authorizations pool.
 - `"slot_period_sec"`: $\mathsf{P}$, the slot period, in seconds.
 - `"auth_queue_len"`: $\mathsf{Q}$, the number of items in the authorizations queue.
@@ -130,14 +129,11 @@ Object with the following members, all Numbers:
 - `"max_extrinsics"`: $\mathsf{T}$, the maximum number of extrinsics in a work-package.
 - `"availability_timeout"`: $\mathsf{U}$, the period in timeslots after which reported but
   unavailable work may be replaced.
-- `"val_count"`: $\mathsf{V}$, the total number of validators.
 - `"max_authorizer_code_size"`: $\mathsf{W}_A$, the maximum size of is-authorized code in octets.
 - `"max_input"`: $\mathsf{W}_B$, the maximum size of the concatenated variable-size blobs,
   extrinsics and imported segments of a work-package, in octets.
 - `"max_service_code_size"`: $\mathsf{W}_C$, the maximum size of service code in octets.
-- `"basic_piece_len"`: $\mathsf{W}_E$, the basic size of erasure-coded pieces in octets.
 - `"max_imports"`: $\mathsf{W}_M$, the maximum number of imports in a work-package.
-- `"segment_piece_count"`: $\mathsf{W}_P$, the number of erasure-coded pieces in a segment.
 - `"max_report_elective_data"`: $\mathsf{W}_R$, the maximum total size of all unbounded blobs in a
   work-report, in octets.
 - `"transfer_memo_size"`: $\mathsf{W}_T$, the size of a transfer memo in octets.
@@ -145,11 +141,12 @@ Object with the following members, all Numbers:
 - `"epoch_tail_start"`: $\mathsf{Y}$, the number of slots into an epoch at which ticket-submission
   ends.
 
-All parameters not described are assumed to be their canonical values. Some parameters are
-dependent on other values:
+All parameters not described are assumed to be their canonical values. Some values are not
+parameters but are fixed or derived from the state:
 
 - $\mathsf{W}_G = 4,104$: The size of a (reconstructed) segment is fixed.
-- $\mathsf{W}_P = \frac{\mathsf{W}_G}{\mathsf{W}_E}$: The number of EC pieces in a segment.
+- The number of validators is the size of the validator key set held in state ($|\kappa|$).
+- The erasure-coding piece size and count follow from the number of validators (GP appendix H).
 
 ### `bestBlock()`
 Returns the header hash and slot of the head of the "best" chain.
@@ -328,6 +325,18 @@ Subscribe to updates of the preimage associated with the given service ID and ha
 #### Subscription update `"result"`
 Chain Subscription Update. The `"value"` member is Null if the preimage has not been provided to
 the service, otherwise it is a Blob containing the preimage.
+
+### `servicePreimageLen(header_hash, id, hash)`
+Returns the length of the preimage of the given hash, if it has been provided to the given service
+in the posterior state of the block with the given header hash. 
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `id`: Number: The ID of the service.
+3. `hash`: Hash: The hash whose preimage length is being requested.
+#### Result
+Null if the preimage has not been provided to the given service, otherwise a Number giving the
+length of the preimage in octets.
 
 ### `serviceRequest(header_hash, id, hash, len)`
 Returns the preimage request associated with the given service ID and hash/length in the posterior
