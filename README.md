@@ -5,3 +5,5 @@
 - [JIP-3](./JIP-3.md): **Telemetry** - Specification for JAM node telemetry allowing integration into JAM Tart (Testing, Analytics and Research Telemetry).
 - [JIP-4](./JIP-4.md): **Chainspec file** - A chain specification collects information that describes a JAM-based network.
 - [JIP-5](./JIP-5.md): **Secret key derivation** - A standard method for deriving a set of validator secret keys from a 32-byte seed.
+- [JIP-6](./JIP-6.md): **Program metadata** - A standard format for the metadata section at the start of PVM code blobs.
+- [JIP-7](./JIP-7.md): **Compact state proofs** - A compact Merkle proof format for the JAM state trie.
