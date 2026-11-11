@@ -52,7 +52,7 @@ For convenience the following common types are defined:
   data must be exactly 31 bytes in length: a raw state key, as defined by the state Merklization
   appendix of the GP.
 - State Proof: A Blob, containing a compact Merkle proof of part of the state of some block. The
-  decoded data is the proof as defined in [JIP-6](./JIP-6.md). The proven keys and their values
+  decoded data is the proof as defined in [JIP-7](./JIP-7.md). The proven keys and their values
   are not part of it; the values are returned beside it.
 
 ## Error codes
@@ -210,7 +210,7 @@ key, otherwise a Blob containing the value.
 
 ### `stateValuesWithProof(header_hash, keys, size_limit)`
 Returns the values of the given keys in the posterior state of the block with the given header
-hash, with a State Proof of them. The proof is as defined in [JIP-6](./JIP-6.md); the server
+hash, with a State Proof of them. The proof is as defined in [JIP-7](./JIP-7.md); the server
 builds it for the keys as described in its Appendix A, with no ranges.
 
 The reply covers the first keys of `keys`, as many as the size limit allows. The size of a reply is
