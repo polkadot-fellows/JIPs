@@ -218,7 +218,7 @@ the number of octets of the encoded proof plus the lengths of the returned value
 choose the covered keys so that the size of the reply does not exceed `size_limit`, except that it
 must always cover the first key, even if the reply for it alone exceeds the limit. It may cover
 fewer keys than would fit. The proof and the values are those of the covered keys alone. The
-requester must verify the proof with the covered keys as the proven keys: a key with a Blob as an
+proof will pass verification with the covered keys as the proven keys: a key with a Blob as an
 entry with that value, and a key with Null as an absent key. The keys not covered have to be
 requested again.
 
