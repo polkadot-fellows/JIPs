@@ -522,3 +522,25 @@ An Object with the following members:
 Subscribe to changes in sync status.
 #### Subscription update `"result"`
 String: Either `"InProgress"` or `"Completed"`.
+
+### `authPools(header_hash, cores)`
+Returns a list of authorizer pools for the given header hash, with one pool for each core provided.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+#### Result
+Array, where each element is an array of hashes. The length of the Array matches the length of
+`cores`, in the same order.
+
+### `authQueues(header_hash, cores)`
+Returns a list of authorizer queues for the given header hash, with one queue for each core provided.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+#### Result
+Array, where each element is an array of hashes. The length of the Array matches the length of
+`cores`, in the same order.
