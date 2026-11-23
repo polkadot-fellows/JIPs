@@ -100,7 +100,7 @@ The following types are defined:
         Exec Cost (read/write calls) ++
         Exec Cost (lookup calls) ++
         Exec Cost (query/solicit/forget/provide calls) ++
-        Exec Cost (info/new/upgrade/eject calls) ++
+        Exec Cost (info/new/upgrade/eject/supervisor calls) ++
         Exec Cost (transfer calls) ++
         Gas (Total gas charged for transfer processing by destination services) ++
         Exec Cost (Other host calls)
