@@ -91,6 +91,9 @@ If these behaviours are unacceptable, use subscriptions tracking the latest fina
 instead. Such subscriptions are well-behaved, but may be significantly delayed compared to
 best-chain subscriptions.
 
+Chain subscriptions always send the current value from the chain as the first update. Subsequent
+updates are sent only when the current value changes.
+
 ## Methods
 
 ### `parameters()`
@@ -195,8 +198,7 @@ client can compute.
 Null if there is no value under the given key, otherwise a Blob containing the value.
 
 ### `subscribeStateValue(key, finalized)`
-Subscribe to updates of the value stored under the given raw state key. An update is sent only
-when the value changes.
+Subscribe to updates of the value stored under the given raw state key.
 #### Parameters
 1. `key`: State Key.
 2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
@@ -271,8 +273,7 @@ Array, where each element is an Array of Hashes. The length of the Array matches
 `cores`, in the same order.
 
 ### `subscribeAuthPools(cores, finalized)`
-Subscribe to updates of the authorizer pools for the given cores. An update is sent for a core only
-when that core's pool changes.
+Subscribe to updates of the authorizer pools for the given cores.
 #### Parameters
 1. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
    index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
@@ -295,8 +296,7 @@ Array, where each element is an Array of Hashes. The length of the Array matches
 `cores`, in the same order.
 
 ### `subscribeAuthQueues(cores, finalized)`
-Subscribe to updates of the authorizer queues for the given cores. An update is sent for a core only
-when that core's queue changes.
+Subscribe to updates of the authorizer queues for the given cores.
 #### Parameters
 1. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
    index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
