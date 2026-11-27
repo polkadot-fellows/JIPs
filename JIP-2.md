@@ -91,6 +91,9 @@ If these behaviours are unacceptable, use subscriptions tracking the latest fina
 instead. Such subscriptions are well-behaved, but may be significantly delayed compared to
 best-chain subscriptions.
 
+Chain subscriptions always send the current value from the chain as the first update. Subsequent
+updates are sent only when the current value changes.
+
 ## Methods
 
 ### `parameters()`
@@ -195,8 +198,7 @@ client can compute.
 Null if there is no value under the given key, otherwise a Blob containing the value.
 
 ### `subscribeStateValue(key, finalized)`
-Subscribe to updates of the value stored under the given raw state key. An update is sent only
-when the value changes.
+Subscribe to updates of the value stored under the given raw state key.
 #### Parameters
 1. `key`: State Key.
 2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
@@ -258,6 +260,52 @@ Subscribe to updates of the activity statistics stored in chain state.
 #### Subscription update `"result"`
 Chain Subscription Update. The `"value"` member is a Blob, containing activity statistics encoded
 as per the GP.
+
+### `authPools(header_hash, cores)`
+Returns a list of authorizer pools for the given header hash, with one pool for each core provided.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+#### Result
+Array, where each element is an Array of Hashes. The length of the Array matches the length of
+`cores`, in the same order.
+
+### `subscribeAuthPools(cores, finalized)`
+Subscribe to updates of the authorizer pools for the given cores.
+#### Parameters
+1. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
+   "best" chain.
+#### Subscription update `"result"`
+Chain Subscription Update. The `"value"` member is an Array of two elements: the first element is
+the core index and the second element is an Array of Hashes that represents the authorizer pool for
+the given core.
+
+### `authQueues(header_hash, cores)`
+Returns a list of authorizer queues for the given header hash, with one queue for each core provided.
+#### Parameters
+1. `header_hash`: Hash: The header hash indicating the block whose posterior state should be used
+   for the query.
+2. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+#### Result
+Array, where each element is an Array of Hashes. The length of the Array matches the length of
+`cores`, in the same order.
+
+### `subscribeAuthQueues(cores, finalized)`
+Subscribe to updates of the authorizer queues for the given cores.
+#### Parameters
+1. `cores`: Array of Numbers: Core indices. These must be in ascending order and unique. Each core
+   index must not exceed $\mathsf{C} - 1$. If any of these conditions is not met, the call fails.
+2. `finalized`: Boolean: True to track the latest finalized block, False to track the head of the
+   "best" chain.
+#### Subscription update `"result"`
+Chain Subscription Update. The `"value"` member is an Array of two elements: the first element is
+the core index and the second element is an Array of Hashes that represents the authorizer queue for
+the given core.
 
 ### `serviceData(header_hash, id)`
 Returns the storage data for the service with the given ID.
